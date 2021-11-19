@@ -54,7 +54,15 @@ extern uint32_t gSystemClock; // [Hz] system clock frequency
 
 
 //// FUNCTIONS ////
-// initializes ADC hardware
+
+// METHOD CALL: main.c
+// DESCRIPTION: initializes ADC hardware
+// INPUTS: void
+// OUTPUTS: void
+// AUTHOR: professor
+// REVISION HISTORY: NA
+// NOTES: NA
+// TODO: NA
 void ADCInit(void) {
 
     // initialize ADC peripherals
@@ -91,8 +99,19 @@ void ADCInit(void) {
 
 }
 
-// gets data from the ADC ISR
-void ISR_ADC(UArg arg0) {
+// METHOD CALL: RTOS?
+// DESCRIPTION: samples analog signal
+// INPUTS:
+//      * arg0 - ?
+// OUTPUTS: void
+// AUTHOR: mchava, ammiera
+// REVISION HISTORY: 11/19/2021
+// NOTES:
+// TODO:
+//      * Need to figure out what is calling this ISR
+//      * Need to figure out what arg0 is for
+//      * Testing
+void ISR0_ADC(UArg arg0) {
 
     ADC1_ISC_R = ADC_ISC_IN0; // clears ADC interrupt flag
     if (ADC1_OSTAT_R & ADC_OSTAT_OV0)
