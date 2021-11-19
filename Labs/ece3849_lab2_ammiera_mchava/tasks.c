@@ -6,7 +6,7 @@
  */
 
 //// INCLUDES & DEFINES ////
-
+#include "sampling.h"
 
 
 
@@ -36,25 +36,14 @@
 //      * Testing
 void task0_waveform(UArg arg0, UArg arg1)
 {
-    unsigned long t;
+    Semaphore_pend(semaTask0, BIOS_WAIT_FOREVER); // blocks until signalled
 
-    while(1) {
-        Semaphore_pend(semaphore0, BIOS_WAIT_FOREVER);
+    int triggerIndex;
 
-        t = TIMER0_PERIOD - TIMER0_TAR_R;
-        if (t > event0_latency) event0_latency = t; // measure latency
+    triggerIndex = RisingTrigger(); // finds trigger index
+    CopySignal(sContext, triggerIndex); // copies signal starting from and ending 1/2 way behind the trigger index
 
-        delay_us(EVENT0_EXECUTION_TIME); // handle event0
-        event0_count++;
-
-        if (Semaphore_getCount(semaphore0)) { // next event occurred
-            event0_missed_deadlines++;
-            t = 2 * TIMER0_PERIOD; // timer overflowed since last event
-        }
-        else t = TIMER0_PERIOD;
-        t -= TIMER0_TAR_R;
-        if (t > event0_response_time) event0_response_time = t; // measure response time
-    }
+    Semaphore_post(semTask2); // signals processing task
 }
 
 
