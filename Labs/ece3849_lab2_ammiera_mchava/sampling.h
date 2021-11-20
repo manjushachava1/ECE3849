@@ -36,7 +36,10 @@ extern volatile int32_t gADCBufferIndex; // latest sample index
 
 
 //// FUNCTION HEADERS ////
+void SignalInit(void);
 void ADC_Init(void);
-void ISR_ADC(UArg arg0);
+void ADC_ISR(void);
+int RisingTrigger(void);
+void CopySignal(tContext sContext, int triggerIndex);
 
 #endif /* SAMPLING_H_ */

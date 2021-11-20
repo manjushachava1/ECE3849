@@ -54,7 +54,56 @@ extern uint32_t gSystemClock; // [Hz] system clock frequency
 
 
 //// FUNCTIONS ////
-// initializes ADC hardware
+
+// METHOD CALL: main.c
+// DESCRIPTION: initializes signaling hardware
+// INPUTS: void
+// OUTPUTS: void
+// AUTHOR: professor
+// REVISION HISTORY: NA
+// NOTES: NA
+// TODO: NA
+void SignalInit(void)
+{
+    // configure M0PWM2, at GPIO PF2, which is BoosterPack 1 header C1 (2nd from right) pin 2
+    // configure M0PWM3, at GPIO PF3, which is BoosterPack 1 header C1 (2nd from right) pin 3
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
+    GPIOPinTypePWM(GPIO_PORTF_BASE, GPIO_PIN_2 | GPIO_PIN_3); // PF2 = M0PWM2, PF3 = M0PWM3
+    GPIOPinConfigure(GPIO_PF2_M0PWM2);
+    GPIOPinConfigure(GPIO_PF3_M0PWM3);
+    GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_2 | GPIO_PIN_3,
+    GPIO_STRENGTH_2MA,
+                     GPIO_PIN_TYPE_STD);
+
+    // configure the PWM0 peripheral, gen 1, outputs 2 and 3
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_PWM0);
+    PWMClockSet(PWM0_BASE, PWM_SYSCLK_DIV_1); // use system clock without division
+    PWMGenConfigure(PWM0_BASE, PWM_GEN_1,
+    PWM_GEN_MODE_DOWN | PWM_GEN_MODE_NO_SYNC);
+    PWMGenPeriodSet(PWM0_BASE, PWM_GEN_1,
+                    roundf((float) gSystemClock / PWM_FREQUENCY));
+    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_2,
+                     roundf((float) gSystemClock / PWM_FREQUENCY * 0.4f)); // 40% duty cycle
+    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_3,
+                     roundf((float) gSystemClock / PWM_FREQUENCY * 0.4f));
+    PWMOutputState(PWM0_BASE, PWM_OUT_2_BIT | PWM_OUT_3_BIT, true);
+    PWMGenEnable(PWM0_BASE, PWM_GEN_1);
+
+    // initialize timer 3 in one-shot mode for polled timing
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER3);
+    TimerDisable(TIMER3_BASE, TIMER_BOTH);
+    TimerConfigure(TIMER3_BASE, TIMER_CFG_ONE_SHOT);
+    TimerLoadSet(TIMER3_BASE, TIMER_A, (gSystemClock) / 100); // 10ms sec interval
+}
+
+// METHOD CALL: main.c
+// DESCRIPTION: initializes ADC hardware
+// INPUTS: void
+// OUTPUTS: void
+// AUTHOR: professor
+// REVISION HISTORY: NA
+// NOTES: NA
+// TODO: NA
 void ADCInit(void) {
 
     // initialize ADC peripherals
@@ -91,8 +140,19 @@ void ADCInit(void) {
 
 }
 
-// gets data from the ADC ISR
-void ISR_ADC(UArg arg0) {
+// METHOD CALL: RTOS?
+// DESCRIPTION: samples analog signal
+// INPUTS:
+//      * arg0 - ?
+// OUTPUTS: void
+// AUTHOR: mchava, ammiera
+// REVISION HISTORY: 11/19/2021
+// NOTES:
+// TODO:
+//      * Need to figure out what is calling this ISR
+//      * Need to figure out what arg0 is for
+//      * Testing
+void ISR0_ADC(UArg arg0) {
 
     ADC1_ISC_R = ADC_ISC_IN0; // clears ADC interrupt flag
     if (ADC1_OSTAT_R & ADC_OSTAT_OV0)
@@ -103,4 +163,58 @@ void ISR_ADC(UArg arg0) {
     gADCBuffer[gADCBufferIndex = ADC_BUFFER_WRAP(gADCBufferIndex + 1)] =
     ADC1_SSFIFO0_R;         // read sample from the ADC1 sequence 0 FIFO
 }
+
+// METHOD CALL: main.c
+// DESCRIPTION: finds oscilloscope trigger
+// INPUTS: void
+// OUTPUTS:
+//      * triggerIndex - resulting trigger index based on search algorithm
+// AUTHOR: ammiera
+// REVISION HISTORY: 11/12/2021
+// NOTES: NA
+// TODO: NA
+int RisingTrigger(void)
+{
+// Step 1
+    int triggerIndex = gADCBufferIndex - HALF_SCREEN_IDX; // half screen width; don't use a magic number;
+
+    // Step 2
+    int triggerSearchStop = triggerIndex - (ADC_BUFFER_SIZE / 2);
+    for (; triggerIndex > triggerSearchStop; triggerIndex--)
+    {
+        // if trigger is found
+        if (gADCBuffer[ADC_BUFFER_WRAP(triggerIndex)] >= ADC_OFFSET && /* checks current sample */
+        gADCBuffer[ADC_BUFFER_WRAP(triggerIndex) + 1] < ADC_OFFSET /* checks next older sample */)
+            break;
+    }
+
+    // Step 3
+    if (triggerIndex == triggerSearchStop) // for loop ran to the end
+        triggerIndex = gADCBufferIndex - HALF_SCREEN_IDX; // reset trigger search index back to how it was initialized
+
+    return triggerIndex;
+}
+
+// METHOD CALL: main.c
+// DESCRIPTION: copies signal starting from and ending 1/2 way behind the trigger index
+// INPUTS:
+//      * sContext - for LCD graphics display
+//      * triggerIndex - index of trigger from RisingTrigger()
+// OUTPUTS: void
+// AUTHOR: ammiera
+// REVISION HISTORY: 11/12/2021
+// NOTES: NA
+// TODO: NA
+void CopySignal(tContext sContext, int triggerIndex)
+{
+    int i = triggerIndex - (ADC_BUFFER_SIZE / 2); // indexes samples
+    int j = 0; // keeps track of local buffer index
+
+    for (; i < triggerIndex; i++)
+    {
+        stableADCBuffer[j] = gADCBuffer[ADC_BUFFER_WRAP(i)]; // gets current sample
+        j++;
+    }
+}
+
 
