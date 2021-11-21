@@ -19,6 +19,6 @@
 
 
 //// FUNCTION HEADERS ////
-void task0_waveform(UArg arg0, UArg arg1);
+void waveform_task(UArg arg0, UArg arg1, tContext sContext);
 
 #endif /* TASKS_H_ */

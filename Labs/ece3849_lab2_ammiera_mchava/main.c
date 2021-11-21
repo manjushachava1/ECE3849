@@ -15,6 +15,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "driverlib/interrupt.h"
+#include "sampling.h"
 
 
 uint32_t gSystemClock = 120000000; // [Hz] system clock frequency
@@ -43,7 +44,6 @@ void task0_func(UArg arg1, UArg arg2)
         // do nothing
     }
 }
-
 
 /**
  * main.c

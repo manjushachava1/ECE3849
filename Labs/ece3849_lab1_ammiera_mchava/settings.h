@@ -43,6 +43,7 @@ void DrawTriggerSlope(tContext sContext);
 void WriteTimeScale(int timeScale, tContext sContext);
 void WriteVoltageScale(tContext sContext, float voltageScale);
 void ADCSampleScaling(tContext sContext, float voltageScale);
+void DrawFrame(tContext sContext);
 uint32_t WriteCPULoad(int flag, tContext sContext);
 
 

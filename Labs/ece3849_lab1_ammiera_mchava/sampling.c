@@ -81,6 +81,7 @@ void SignalInit(void)
                      roundf((float) gSystemClock / PWM_FREQUENCY * 0.4f));
     PWMOutputState(PWM0_BASE, PWM_OUT_2_BIT | PWM_OUT_3_BIT, true);
     PWMGenEnable(PWM0_BASE, PWM_GEN_1);
+    System_printf("PWM generation in SignalInit");
 
     // initialize timer 3 in one-shot mode for polled timing
     SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER3);
