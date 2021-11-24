@@ -38,11 +38,12 @@ extern const char NA;
 
 //// FUNCTION HEADERS ////
 float GetVoltageScale(void); // gets
-void DrawGrid(tContext sContext);
+void DrawGrid();
 void DrawTriggerSlope(tContext sContext);
-void WriteTimeScale(int timeScale, tContext sContext);
-void WriteVoltageScale(tContext sContext, float voltageScale);
-void ADCSampleScaling(tContext sContext, float voltageScale);
+void WriteTimeScale(int timeScale);
+void WriteVoltageScale(float voltageScale);
+void ADCSampleScaling(float voltageScale);
+void DrawFrame();
 uint32_t WriteCPULoad(int flag, tContext sContext);
 
 

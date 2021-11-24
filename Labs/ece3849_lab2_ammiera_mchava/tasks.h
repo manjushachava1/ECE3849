@@ -19,6 +19,9 @@
 
 
 //// FUNCTION HEADERS ////
-void waveform_task(UArg arg0, UArg arg1, tContext sContext);
+void waveform_task(UArg arg1, UArg arg2);
+void processing_task(UArg arg1, UArg arg2);
+void display_task(UArg arg1, UArg arg2);
+
 
 #endif /* TASKS_H_ */

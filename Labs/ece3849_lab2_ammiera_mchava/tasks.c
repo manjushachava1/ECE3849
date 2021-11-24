@@ -18,13 +18,11 @@
 #include <ti/sysbios/BIOS.h>
 #include <ti/sysbios/knl/Task.h>
 
-
 //// EXPORTED VARIABLES ////
 extern uint16_t displayADCBuffer[ADC_BUFFER_SIZE];
 
 //// GLOBAL VARIABLES ////
 float gVoltageScale;
-
 
 //// FUNCTIONS ////
 
@@ -45,44 +43,57 @@ float gVoltageScale;
 //      * Need to figure out what is calling this task
 //      * Need to figure out what arg0 and arg1 is for
 //      * Testing
-void waveform_task(UArg arg0, UArg arg1, tContext sContext)
+void waveform_task(UArg arg1, UArg arg2)
 {
     IntMasterEnable();
-    Semaphore_pend(semTask0, BIOS_WAIT_FOREVER); // blocks until signaled
 
-    int triggerIndex;
+    while (1)
+    {
 
-    triggerIndex = RisingTrigger(); // finds trigger index
-    CopySignal(sContext, triggerIndex); // copies signal starting from and ending 1/2 way behind the trigger index
+        Semaphore_pend(WaveformSem, BIOS_WAIT_FOREVER); // blocks until signaled
 
-    Semaphore_post(semTask2); // signals processing task
+        int triggerIndex;
+
+        Semaphore_pend(CSSem, BIOS_WAIT_FOREVER);
+        triggerIndex = RisingTrigger(); // finds trigger index
+        CopySignal(triggerIndex); // copies signal starting from and ending 1/2 way behind the trigger index
+        Semaphore_post(CSSem);
+
+        Semaphore_post(ProcessingSem); // signals processing task
+    }
 }
 
-void processing_task(tContext sContext){
-    IntMasterEnable();
+void processing_task(UArg arg1, UArg arg2)
+{
+//    IntMasterEnable();
+    while (1)
+    {
+        Semaphore_pend(ProcessingSem, BIOS_WAIT_FOREVER); // blocks until signaled
 
-    Semaphore_pend(semTask2, BIOS_WAIT_FOREVER); // blocks until signaled
+        // scales captured waveform
+        gVoltageScale = GetVoltageScale();
+        ADCSampleScaling(gVoltageScale);
 
-    // scales captured waveform
-    gVoltageScale = GetVoltageScale();
-    ADCSampleScaling(sContext, gVoltageScale);
-
-    // signal Display Task to draw waveform
-    Semaphore_post(semTask1); // signals display task
+        // signal Display Task to draw waveform
+        Semaphore_post(WaveformSem);
+        Semaphore_post(DisplaySem); // signals display task
+    }
 }
 
-void display_task(tContext sContext){
-    IntMasterEnable();
+void display_task(UArg arg1, UArg arg2)
+{
+//    IntMasterEnable();
+    while (1)
+    {
+        Semaphore_pend(DisplaySem, BIOS_WAIT_FOREVER);
 
-    Semaphore_pend(semTask1, BIOS_WAIT_FOREVER);
+        // drawing grid, scales, and waveform
+        DrawGrid();
+        WriteVoltageScale(gVoltageScale);
+        WriteTimeScale(2);
+        DrawFrame();
 
-    // drawing grid, scales, and waveform
-    DrawGrid(sContext);
-    WriteVoltageScale(sContext, gVoltageScale);
-    WriteTimeScale(2, sContext);
-    DrawFrame(sContext);
-
-    Semaphore_post(semTask0); // signals waveform task
+        Semaphore_post(WaveformSem); // signals waveform task
+    }
 }
-
 

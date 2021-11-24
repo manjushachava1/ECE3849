@@ -214,7 +214,7 @@ int RisingTrigger(void)
 // REVISION HISTORY: 11/12/2021
 // NOTES: NA
 // TODO: NA
-void CopySignal(tContext sContext, int triggerIndex)
+void CopySignal(int triggerIndex)
 {
     int i = triggerIndex - (ADC_BUFFER_SIZE / 2); // indexes samples
     int j = 0; // keeps track of local buffer index

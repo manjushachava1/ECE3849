@@ -40,6 +40,6 @@ void SignalInit(void);
 void ADC_Init(void);
 void ADC_ISR(void);
 int RisingTrigger(void);
-void CopySignal(tContext sContext, int triggerIndex);
+void CopySignal(int triggerIndex);
 
 #endif /* SAMPLING_H_ */

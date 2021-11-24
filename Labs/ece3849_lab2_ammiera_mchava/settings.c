@@ -59,6 +59,7 @@ const char NA = 'c';
 uint32_t count_unloaded = 0;
 uint32_t count_loaded = 0;
 float cpu_load = 0.0;
+tContext sContext;
 
 //// FUNCTIONS ////
 // updates current voltage scale index based on FIFO button press and returns current voltage scale
@@ -114,7 +115,7 @@ float GetVoltageScale()
     return lVoltageScale;
 }
 
-void DrawGrid(tContext sContext)
+void DrawGrid()
 {
     int32_t x = 4;
     int32_t y = 4;
@@ -157,13 +158,13 @@ void DrawGrid(tContext sContext)
 
 }
 
-void WriteTimeScale(int timeScale, tContext sContext)
+void WriteTimeScale(int timeScale)
 {
     GrContextForegroundSet(&sContext, ClrWhite); // white text
     GrStringDrawCentered(&sContext, "20 us", 5, 20, 5, 1);
 }
 
-void WriteVoltageScale(tContext sContext, float voltageScale)
+void WriteVoltageScale(float voltageScale)
 {
     // Print volts per division
     snprintf(str, sizeof(str), "%.1f V", voltageScale);
@@ -172,7 +173,7 @@ void WriteVoltageScale(tContext sContext, float voltageScale)
                  false);
 }
 
-void ADCSampleScaling(tContext sContext, float voltageScale)
+void ADCSampleScaling(float voltageScale)
 {
     uint16_t sample;
     float fScale;
@@ -195,7 +196,7 @@ void ADCSampleScaling(tContext sContext, float voltageScale)
 
 }
 
-void DrawFrame(tContext sContext)
+void DrawFrame()
 {
     int i;
     for (i = 0; i < LCD_HORIZONTAL_MAX; i++)
