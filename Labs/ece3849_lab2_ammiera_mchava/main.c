@@ -3,12 +3,15 @@
  *
  * Gene Bogdanov    9/13/2017
  */
+
+ //// INCLUDES & DEFINES ////
+
 /* XDCtools Header files */
 #include <xdc/std.h>
 #include <xdc/runtime/System.h>
 #include <xdc/cfg/global.h>
 
-/* BIOS Header files */
+/* BIOS header files */
 #include <ti/sysbios/BIOS.h>
 #include <ti/sysbios/knl/Task.h>
 
@@ -16,15 +19,30 @@
 #include <stdbool.h>
 #include "driverlib/interrupt.h"
 #include "sampling.h"
- #include "driverlib/fpu.h"
- #include "driverlib/sysctl.h"
- #include "Crystalfontz128x128_ST7735.h"
+#include "driverlib/fpu.h"
+#include "driverlib/sysctl.h"
+#include "Crystalfontz128x128_ST7735.h"
 
+/* Code header files */
+ #include "sampling.h"
+ #include "string.h"
+ #include "fifo.h"
+ #include "settings.h"
+ #include "buttons.h"
+ #include <math.h>
+
+
+
+
+//// GLOBAL VARIABLES ////
+volatile uint32_t gTime; // time in hundredth of a second
 uint32_t gSystemClock = 120000000; // [Hz] system clock frequency
+tContext sContext;
 
-/*
- *  ======== main ========
- */
+
+
+
+//// MAIN FUNCTION ////
 int main(void)
 {
     IntMasterDisable();
@@ -38,12 +56,11 @@ int main(void)
     Crystalfontz128x128_Init(); // Initialize the LCD display driver
     Crystalfontz128x128_SetOrientation(LCD_ORIENTATION_UP); // set screen orientation
 
-    // hardware initialization goes here
+    // hardware initialization
     SignalInit(); // initialize signal generator hardware
-    ADCInit();
-    ButtonInit();
+    ADCInit(); // initialize ADC
+    ButtonInit(); // initialize board buttons
 
-    tContext sContext;
     GrContextInit(&sContext, &g_sCrystalfontz128x128); // Initialize the grlib graphics context
     GrContextFontSet(&sContext, &g_sFontFixed6x8); // select font
 
@@ -97,9 +114,7 @@ void task0_func(UArg arg1, UArg arg2)
 
 
 
- //// GLOBAL VARIABLES ////
- uint32_t gSystemClock; // [Hz] system clock frequency
- volatile uint32_t gTime; // time in hundredth of a second
+
 
 
 
