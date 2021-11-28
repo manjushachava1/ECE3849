@@ -6,12 +6,12 @@
 
  //// INCLUDES & DEFINES ////
 
-/* XDCtools Header files */
+// XDCtools Header files
 #include <xdc/std.h>
 #include <xdc/runtime/System.h>
 #include <xdc/cfg/global.h>
 
-/* BIOS header files */
+// BIOS header files
 #include <ti/sysbios/BIOS.h>
 #include <ti/sysbios/knl/Task.h>
 
@@ -23,7 +23,7 @@
 #include "driverlib/sysctl.h"
 #include "Crystalfontz128x128_ST7735.h"
 
-/* Code header files */
+// Code header files
  #include "sampling.h"
  #include "string.h"
  #include "fifo.h"

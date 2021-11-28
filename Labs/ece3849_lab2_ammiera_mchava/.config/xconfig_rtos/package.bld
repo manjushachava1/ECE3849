@@ -11,7 +11,7 @@ var makeAssembly = false;
 var Executable = xdc.module('xdc.bld.Executable');
 
 var exeOpts = new Executable.Attrs({
-        cfgScript: '/home/manjusha/git/ECE3849/Labs/ece3849_lab2_ammiera_mchava/rtos.cfg',
+        cfgScript: 'C:/Users/alexm/OneDrive - Worcester Polytechnic Institute (wpi.edu)/College/Courses/B2021/ECE3849/Lab/Workspace/Git/ECE3849/Labs/ece3849_lab2_ammiera_mchava/rtos.cfg',
         profile: 'release',
         cfgHome: 'xconfig_rtos',
 });
@@ -40,8 +40,8 @@ else {
 }
 
 var thisObj = {
-    cfg:        '/home/manjusha/git/ECE3849/Labs/ece3849_lab2_ammiera_mchava/rtos.cfg',
-    outputPath: '/home/manjusha/git/ECE3849/Labs/ece3849_lab2_ammiera_mchava/.config/xconfig_rtos',
+    cfg:        'C:/Users/alexm/OneDrive - Worcester Polytechnic Institute (wpi.edu)/College/Courses/B2021/ECE3849/Lab/Workspace/Git/ECE3849/Labs/ece3849_lab2_ammiera_mchava/rtos.cfg',
+    outputPath: 'C:/Users/alexm/OneDrive - Worcester Polytechnic Institute (wpi.edu)/College/Courses/B2021/ECE3849/Lab/Workspace/Git/ECE3849/Labs/ece3849_lab2_ammiera_mchava/.config/xconfig_rtos',
     exeName:    'rtos' + suffix,
     exeIntName: 'rtos' + suffix.replace('.', '_'),
     targ:       targ,

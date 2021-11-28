@@ -8,21 +8,29 @@
 //// INCLUDES & DEFINES ////
 #include "sampling.h"
 #include "settings.h"
+#include "driverlib/interrupt.h"
 
-/* XDCtools Header files */
+// XDCtools Header files
 #include <xdc/std.h>
 #include <xdc/runtime/System.h>
 #include <xdc/cfg/global.h>
 
-/* BIOS Header files */
+// BIOS Header files
 #include <ti/sysbios/BIOS.h>
 #include <ti/sysbios/knl/Task.h>
 
-//// EXPORTED VARIABLES ////
-extern uint16_t displayADCBuffer[ADC_BUFFER_SIZE];
+
+
 
 //// GLOBAL VARIABLES ////
 float gVoltageScale;
+
+/* imported variables */
+extern uint16_t displayADCBuffer[ADC_BUFFER_SIZE];
+extern tContext sContext;
+
+
+
 
 //// FUNCTIONS ////
 
@@ -33,8 +41,8 @@ float gVoltageScale;
 //      3. Signals the Processing Task
 //      4. Blocks
 // INPUTS:
-//      * arg0 - ?
 //      * arg1 - ?
+//      * arg2 - ?
 // OUTPUTS: void
 // AUTHOR: ammiera
 // REVISION HISTORY: 11/19/2021
@@ -65,7 +73,6 @@ void waveform_task(UArg arg1, UArg arg2)
 
 void processing_task(UArg arg1, UArg arg2)
 {
-//    IntMasterEnable();
     while (1)
     {
         Semaphore_pend(ProcessingSem, BIOS_WAIT_FOREVER); // blocks until signaled
@@ -75,14 +82,13 @@ void processing_task(UArg arg1, UArg arg2)
         ADCSampleScaling(gVoltageScale);
 
         // signal Display Task to draw waveform
-        Semaphore_post(WaveformSem);
         Semaphore_post(DisplaySem); // signals display task
+        Semaphore_post(WaveformSem);
     }
 }
 
 void display_task(UArg arg1, UArg arg2)
 {
-//    IntMasterEnable();
     while (1)
     {
         Semaphore_pend(DisplaySem, BIOS_WAIT_FOREVER);
@@ -92,8 +98,7 @@ void display_task(UArg arg1, UArg arg2)
         WriteVoltageScale(gVoltageScale);
         WriteTimeScale(2);
         DrawFrame();
-
-        Semaphore_post(WaveformSem); // signals waveform task
+        GrFlush(&sContext); // flush the frame buffer to the LCD
     }
 }
 

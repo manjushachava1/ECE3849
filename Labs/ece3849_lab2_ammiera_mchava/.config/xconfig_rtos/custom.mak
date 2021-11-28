@@ -7,5 +7,5 @@
 #       or equal to the generated config header
 #
 linker.cmd: package/cfg/rtos_pem4f.xdl
-	$(SED) 's"^\"\(package/cfg/rtos_pem4fcfg.cmd\)\"$""\"C:/Users/alexm/OneDrive - Worcester Polytechnic Institute (wpi.edu)/College/Courses/B2021/ECE3849/Labs/ECE3849/Labs/ece3849_lab2_ammiera_mchava/.config/xconfig_rtos/\1\""' package/cfg/rtos_pem4f.xdl > $@
+	$(SED) 's"^\"\(package/cfg/rtos_pem4fcfg.cmd\)\"$""\"C:/Users/alexm/OneDrive - Worcester Polytechnic Institute (wpi.edu)/College/Courses/B2021/ECE3849/Lab/Workspace/Git/ECE3849/Labs/ece3849_lab2_ammiera_mchava/.config/xconfig_rtos/\1\""' package/cfg/rtos_pem4f.xdl > $@
 	-$(SETDATE) -r:max package/cfg/rtos_pem4f.h compiler.opt compiler.opt.defs
