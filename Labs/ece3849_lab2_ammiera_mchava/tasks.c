@@ -54,13 +54,12 @@ extern tContext sContext;
 void waveform_task(UArg arg1, UArg arg2)
 {
     IntMasterEnable();
+    int triggerIndex;
 
     while (1)
     {
 
         Semaphore_pend(WaveformSem, BIOS_WAIT_FOREVER); // blocks until signaled
-
-        int triggerIndex;
 
         Semaphore_pend(CSSem, BIOS_WAIT_FOREVER);
         triggerIndex = RisingTrigger(); // finds trigger index
