@@ -195,12 +195,6 @@ void ADCSampleScaling(float voltageScale)
         sample = stableADCBuffer[i];
         displayADCBuffer[i] = ((int) (LCD_VERTICAL_MAX / 2))
                 - (int) (fScale * ((int) sample - ADC_OFFSET));
-
-        // commenting drawing portion, called in later task
-//        if (i != 0)
-//        {
-//            GrLineDraw(&sContext, i - 1, y[i - 1], i, y[i]);
-//        }
     }
 
 }

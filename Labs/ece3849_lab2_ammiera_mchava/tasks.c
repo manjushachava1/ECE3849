@@ -95,9 +95,12 @@ void display_task(UArg arg1, UArg arg2)
 
         // drawing grid, scales, and waveform
         DrawGrid();
-        WriteVoltageScale(gVoltageScale);
+        DrawTriggerSlope();
         WriteTimeScale(2);
+        WriteVoltageScale(gVoltageScale);
+        ADCSampleScaling(gVoltageScale);
         DrawFrame();
+
         GrFlush(&sContext); // flush the frame buffer to the LCD
     }
 }
