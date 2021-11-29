@@ -37,8 +37,7 @@ extern volatile int32_t gADCBufferIndex; // latest sample index
 
 //// FUNCTION HEADERS ////
 void SignalInit(void);
-void ADC_Init(void);
-void ADC_ISR(void);
+void ADCInit(void);
 int RisingTrigger(void);
 void CopySignal(int triggerIndex);
 

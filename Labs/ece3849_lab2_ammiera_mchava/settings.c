@@ -37,7 +37,11 @@
 #include "settings.h"
 #include "buttons.h"
 
-//// FUNCTIONS ////
+
+
+
+//// GLOBAL VARIABLES ////
+
 // variables used to display scaled data
 int16_t y[1024];
 char str[50];
@@ -45,6 +49,7 @@ char str[50];
 // imported variables
 extern int bButtonPressed;
 extern uint16_t stableADCBuffer[ADC_BUFFER_SIZE];
+extern tContext sContext;
 
 // indexing variables
 uint16_t displayADCBuffer[ADC_BUFFER_SIZE];
@@ -61,9 +66,13 @@ uint32_t count_loaded = 0;
 float cpu_load = 0.0;
 tContext sContext;
 
+
+
+
 //// FUNCTIONS ////
+
 // updates current voltage scale index based on FIFO button press and returns current voltage scale
-float GetVoltageScale()
+float GetVoltageScale(void)
 {
     char *pButtonPressed;
     char buttonPressed;
@@ -115,7 +124,7 @@ float GetVoltageScale()
     return lVoltageScale;
 }
 
-void DrawGrid()
+void DrawGrid(void)
 {
     int32_t x = 4;
     int32_t y = 4;
@@ -186,17 +195,11 @@ void ADCSampleScaling(float voltageScale)
         sample = stableADCBuffer[i];
         displayADCBuffer[i] = ((int) (LCD_VERTICAL_MAX / 2))
                 - (int) (fScale * ((int) sample - ADC_OFFSET));
-
-        // commenting drawing portion, called in later task
-//        if (i != 0)
-//        {
-//            GrLineDraw(&sContext, i - 1, y[i - 1], i, y[i]);
-//        }
     }
 
 }
 
-void DrawFrame()
+void DrawFrame(void)
 {
     int i;
     for (i = 0; i < LCD_HORIZONTAL_MAX; i++)
@@ -209,7 +212,7 @@ void DrawFrame()
     }
 }
 
-void DrawTriggerSlope(tContext sContext)
+void DrawTriggerSlope(void)
 {
     int y1 = 10;
     int y2 = y1 - 8; // 2
@@ -232,7 +235,7 @@ void DrawTriggerSlope(tContext sContext)
     GrLineDrawH(&sContext, xTrig1, xTrig2, yTrig);
 }
 
-uint32_t WriteCPULoad(int flag, tContext sContext)
+uint32_t WriteCPULoad(int flag)
 {
     uint32_t i = 0;
     TimerIntClear(TIMER3_BASE, TIMER_TIMA_TIMEOUT);
