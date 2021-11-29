@@ -9,6 +9,9 @@
 #include <math.h>
 #include "kiss_fft.h"
 #include "_kiss_fft_guts.h"
+#include "settings.h"
+#include "buttons.h"
+#include "sampling.h"
 
 #define PI 3.14159265358979f
 #define NFFT 1024         // FFT length
@@ -27,6 +30,7 @@ float out_db[NFFT];
 
 // imported variables
 extern tContext sContext;
+char str[50];
 
 
 
@@ -56,6 +60,7 @@ void compute_FFT(void) {
 
 void convert_to_dB(void) {
     int kiss_fft_idx;
+    int i;
 
     for (kiss_fft_idx = 0; kiss_fft_idx < NFFT; kiss_fft_idx++)
     {

@@ -6,9 +6,18 @@
  */
 
 //// INCLUDES & DEFINES ////
+#include <stdint.h>
+#include <stdbool.h>
+#include "inc/hw_memmap.h"
+#include "inc/hw_ints.h"
+#include "driverlib/sysctl.h"
+#include "driverlib/gpio.h"
+#include "driverlib/timer.h"
+#include "driverlib/interrupt.h"
+#include "driverlib/adc.h"
+#include "buttons.h"
 #include "sampling.h"
 #include "settings.h"
-#include "driverlib/interrupt.h"
 
 // XDCtools Header files
 #include <xdc/std.h>
@@ -28,6 +37,11 @@ float gVoltageScale;
 /* imported variables */
 extern uint16_t displayADCBuffer[ADC_BUFFER_SIZE];
 extern tContext sContext;
+
+// benchmarking variables
+uint32_t gButtonLatency = 0;
+uint32_t gButtonResponseTime = 0;
+uint32_t gButtonMissedDeadlines = 0;
 
 
 
@@ -104,3 +118,92 @@ void display_task(UArg arg1, UArg arg2)
     }
 }
 
+void button_task(UArg arg0, UArg arg1)
+{
+    char msg;
+    uint32_t timer0_period = TimerLoadGet(TIMER0_BASE, TIMER_A) + 1;
+
+    while (true) {
+        Semaphore_pend(ButtonSem, BIOS_WAIT_FOREVER);
+
+        uint32_t t = timer0_period - TimerValueGet(TIMER0_BASE, TIMER_A);
+        if (t > gButtonLatency) gButtonLatency = t; // measure latency
+
+        uint32_t gpio_buttons =
+                (~GPIOPinRead(GPIO_PORTJ_BASE, 0xff) & (GPIO_PIN_1 | GPIO_PIN_0)) // EK-TM4C1294XL buttons in positions 0 and 1
+                | (~GPIOPinRead(GPIO_PORTH_BASE, 0xff) & GPIO_PIN_1) << 1   // BoosterPack button 1 in position 2
+                | (~GPIOPinRead(GPIO_PORTK_BASE, 0xff) & GPIO_PIN_6) >> 3   // BoosterPack button 2 in position 3
+                | (~GPIOPinRead(GPIO_PORTD_BASE, 0xff) & GPIO_PIN_4);       // BoosterPack Joystick Select button in position 4
+
+        uint32_t old_buttons = gButtons;    // save previous button state
+        ButtonDebounce(gpio_buttons);       // Run the button debouncer. The result is in gButtons.
+        ButtonReadJoystick();               // Convert joystick state to button presses. The result is in gButtons.
+        uint32_t presses = ~old_buttons & gButtons;   // detect button presses (transitions from not pressed to pressed)
+        presses |= ButtonAutoRepeat();      // autorepeat presses if a button is held long enough
+
+        if (presses & 1) {        // EK-TM4C1294XL button 1 pressed
+            msg = '1';
+            Mailbox_post(ButtonMailbox, &msg, BIOS_WAIT_FOREVER);
+        }
+        if (presses & (1 << 1)) { // EK-TM4C1294XL button 2 pressed
+            msg = '2';
+            Mailbox_post(ButtonMailbox, &msg, BIOS_WAIT_FOREVER);
+        }
+        if (presses & (1 << 2)) { // BoosterPack button 1 pressed
+            msg = 'A';
+            Mailbox_post(ButtonMailbox, &msg, BIOS_WAIT_FOREVER);
+        }
+        if (presses & (1 << 3)) { // BoosterPack button 2 pressed
+            msg = 'B';
+            Mailbox_post(ButtonMailbox, &msg, BIOS_WAIT_FOREVER);
+        }
+        if (presses & (1 << 4)) { // joystick select button pressed
+            msg = 'S';
+            Mailbox_post(ButtonMailbox, &msg, BIOS_WAIT_FOREVER);
+        }
+        if (presses & (1 << 5)) { // joystick deflected right
+            msg = 'R';
+            Mailbox_post(ButtonMailbox, &msg, BIOS_WAIT_FOREVER);
+        }
+        if (presses & (1 << 6)) { // joystick deflected left
+            msg = 'L';
+            Mailbox_post(ButtonMailbox, &msg, BIOS_WAIT_FOREVER);
+        }
+        if (presses & (1 << 7)) { // joystick deflected up
+            msg = 'U';
+            Mailbox_post(ButtonMailbox, &msg, BIOS_WAIT_FOREVER);
+        }
+        if (presses & (1 << 8)) { // joystick deflected down
+            msg = 'D';
+            Mailbox_post(ButtonMailbox, &msg, BIOS_WAIT_FOREVER);
+        }
+
+        if (Semaphore_getCount(ButtonSem)) { // next event occurred
+            gButtonMissedDeadlines++;
+            t = 2 * timer0_period; // timer overflowed since last event
+        }
+        else t = timer0_period;
+        t -= TimerValueGet(TIMER0_BASE, TIMER_A);
+        if (t > gButtonResponseTime) gButtonResponseTime = t; // measure response time
+    }
+}
+
+
+void button_clock(UArg arg)
+{
+    Semaphore_post(ButtonSem);
+}
+
+
+void user_input_task(UArg arg0, UArg arg1)
+{
+    char button;
+
+    while (true) {
+        Mailbox_pend(ButtonMailbox, &button, BIOS_WAIT_FOREVER);
+
+        UserInput(button);
+
+        Semaphore_post(DisplaySem);  // request update of the display
+    }
+}
