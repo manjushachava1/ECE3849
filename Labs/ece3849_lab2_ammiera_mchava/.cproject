@@ -113,6 +113,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="tm4c1294ncpdt.cmd|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/sysbios"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -225,6 +226,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="EK_TM4C1294XL.cmd|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/sysbios"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

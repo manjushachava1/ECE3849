@@ -187,16 +187,21 @@ void ADCSampleScaling(float voltageScale)
     int i;
 
     fScale = (VIN_RANGE * PIXELS_PER_DIV) / ((1 << ADC_BITS) * voltageScale);
+    GrContextForegroundSet(&sContext, ClrYellow); // yellow text
 
     for (i = 0; i < LCD_HORIZONTAL_MAX; i++)
     {
         sample = stableADCBuffer[i];
-        displayADCBuffer[i] = ((int) (LCD_VERTICAL_MAX / 2))
+        y[i] = ((int) (LCD_VERTICAL_MAX / 2))
                 - (int) (fScale * ((int) sample - ADC_OFFSET));
+        if (i != 0)
+        {
+            GrLineDraw(&sContext, i - 1, y[i - 1], i, y[i]);
+        }
     }
-
 }
 
+/*
 void DrawFrame(void)
 {
     int i;
@@ -209,6 +214,7 @@ void DrawFrame(void)
         }
     }
 }
+*/
 
 void DrawTriggerSlope(void)
 {

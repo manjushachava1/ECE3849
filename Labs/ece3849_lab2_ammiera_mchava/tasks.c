@@ -66,7 +66,7 @@ int bIsSpecSampled = 0; // false
  //      * Testing
 
 
-void user_input_task(UArg arg0, UArg arg1)
+void user_input_task(UArg arg1, UArg arg2)
 {
     char button;
 
@@ -92,20 +92,19 @@ void waveform_task(UArg arg1, UArg arg2)
 
         Semaphore_pend(CSSem, BIOS_WAIT_FOREVER);
 
-        if (!gSpectrumMode)
+        if (gSpectrumMode)
         {
+            if(!bIsSpecSampled) {
+                get_spec_samples();
+                compute_FFT();
+                convert_to_dB();
+                bIsSpecSampled = 1;
+            }
+        } else {
             triggerIndex = RisingTrigger(); // finds trigger index
             CopySignal(triggerIndex); // copies signal starting from and ending 1/2 way behind the trigger index
             gVoltageScale = GetVoltageScale();
             ADCSampleScaling(gVoltageScale);
-        }
-
-        if (!bIsSpecSampled)
-        {
-            get_spec_samples();
-            compute_FFT();
-            convert_to_dB();
-            bIsSpecSampled = 1;
         }
 
         Semaphore_post(CSSem);
@@ -133,30 +132,28 @@ void display_task(UArg arg1, UArg arg2)
             OscilloscopeSpectrumDrawGrid(&sContext);
             OscilloscopeSpectrumDrawSettings(&sContext);
             GrContextForegroundSet(&sContext, ClrOrange); // orange waveform
+            GrFlush(&sContext); // flush the frame buffer to the LCD
         }
         else
         {
             // draw everything to the local frame buffer
-            OscilloscopeDrawGrid(&sContext);
-            OscilloscopeDrawSettings(&sContext);
-            GrContextForegroundSet(&sContext, ClrYellow); // yellow waveform
+            DrawGrid();
+            DrawTriggerSlope();
+            WriteTimeScale(2);
+            WriteVoltageScale(gVoltageScale);
+            GrFlush(&sContext); // flush the frame buffer to the LCD
+            ADCSampleScaling(gVoltageScale);
+            GrFlush(&sContext); // flush the frame buffer to the LCD
         }
-
-        Semaphore_pend(CSSem, BIOS_WAIT_FOREVER);
-        OscilloscopeDrawWaveform(&sContext);
-        Semaphore_post(CSSem);
-
-        GrFlush(&sContext); // flush the frame buffer to the LCD
     }
 }
-//
+
 void processing_task(UArg arg1, UArg arg2)
 {
     while (true) {
         Semaphore_pend(ProcessingSem, BIOS_WAIT_FOREVER);
 
         Semaphore_post(DisplaySem); // request update of the display
-
         Semaphore_post(WaveformSem); // request another waveform acquisition
     }
 }
