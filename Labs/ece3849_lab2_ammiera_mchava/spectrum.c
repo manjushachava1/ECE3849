@@ -49,6 +49,7 @@ void get_spec_samples(void) {
 
     cfg = kiss_fft_alloc(NFFT, 0, kiss_fft_cfg_buffer, &buffer_size); // init Kiss FFT
 
+    // Need to pause ADC samplinf?
     for (kiss_fft_idx = 0; kiss_fft_idx < NFFT; kiss_fft_idx++)
     {
         in[kiss_fft_idx].r = gADCBuffer[ADC_BUFFER_WRAP(ADC_buffer_idx)]; // gets current sample from ADC buffer and sets it as real part of the waveform
@@ -64,11 +65,10 @@ void compute_FFT(void) {
 
 void convert_to_dB(void) {
     int kiss_fft_idx;
-    int i;
 
     for (kiss_fft_idx = 0; kiss_fft_idx < NFFT; kiss_fft_idx++)
     {
-         out_db[kiss_fft_idx] = 10 * log10f(out[i].r * out[i].r + out[i].i * out[i].i); ;
+         out_db[kiss_fft_idx] = 10 * log10f(out[kiss_fft_idx].r * out[kiss_fft_idx].r + out[kiss_fft_idx].i * out[kiss_fft_idx].i); ;
 
         kiss_fft_idx++;
     }
