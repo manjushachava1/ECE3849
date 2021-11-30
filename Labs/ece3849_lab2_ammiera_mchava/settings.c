@@ -66,30 +66,6 @@ uint32_t count_loaded = 0;
 float cpu_load = 0.0;
 tContext sContext;
 
-// User inputs
-int gTimeSetting = 0;                           // time scale index
-static int gVoltageSetting = 2;                 // voltage scale index
-static int gTriggerY = FRAME_SIZE_Y/2;          // trigger level y-coordinate on the LCD
-static bool gTriggerRising = true;              // trigger slope spec
-static int32_t gTriggerLevel = ADC_OFFSET;      // trigger level in ADC units
-static int gAdjusting = 2;      // which setting is currently being adjusted (0 = time, 1 = voltage, 2 = trigger)
-static float gScale;            // floating point ADC to pixels conversion factor
-bool gSpectrumMode = false;   // true if FFT mode, false if time domain mode
-extern uint32_t gSystemClock;
-extern tContext sContext;  // grlib context
-
-
-// sampling rates for different time scales
-const float gSamplingRate[TIME_SCALE_STEPS] = {
-        1000000, PIXELS_PER_DIV/50e-6, PIXELS_PER_DIV/100e-6, PIXELS_PER_DIV/200e-6,
-        PIXELS_PER_DIV/500e-6, PIXELS_PER_DIV/1e-3, PIXELS_PER_DIV/2e-3, PIXELS_PER_DIV/5e-3,
-        PIXELS_PER_DIV/10e-3, PIXELS_PER_DIV/20e-3, PIXELS_PER_DIV/50e-3, PIXELS_PER_DIV/100e-3
-};
-
-// volts/div for different voltage scales
-static const float gVoltsPerDiv[VOLTAGE_SCALE_STEPS] = {0.1, 0.2, 0.5, 1.0};
-
-
 
 //// FUNCTIONS ////
 
@@ -276,97 +252,5 @@ uint32_t WriteCPULoad(int flag)
 
     }
     return i;
-}
-
-
-void OscilloscopeTimeScale(void)
-{
-    if (gTimeSetting == 0) {
-        // special setting that runs the ADC at full speed
-        ADCSequenceDisable(ADC1_BASE, 0);
-        ADCSequenceConfigure(ADC1_BASE, 0, ADC_TRIGGER_ALWAYS, 0);
-        ADCSequenceEnable(ADC1_BASE, 0);
-    }
-    else {
-        // change the timer period
-        TimerDisable(TIMER1_BASE, TIMER_A);
-        TimerLoadSet(TIMER1_BASE, TIMER_A, (float)gSystemClock / gSamplingRate[gTimeSetting] - 0.5f);
-        TimerEnable(TIMER1_BASE, TIMER_A);
-        // trigger the ADC on the timer
-        ADCSequenceDisable(ADC1_BASE, 0);
-        ADCSequenceConfigure(ADC1_BASE, 0, ADC_TRIGGER_TIMER, 0);
-        ADCSequenceEnable(ADC1_BASE, 0);
-    }
-}
-
-void OscilloscopeVoltageScale(void)
-{
-    // floating point ADC to pixels conversion factor
-    gScale = (ADC_RANGE * PIXELS_PER_DIV)/((1 << ADC_BITS) * gVoltsPerDiv[gVoltageSetting]);
-}
-
-void OscilloscopeTriggerLevel(void)
-{
-    // trigger level in ADC units
-    gTriggerLevel = (long)((FRAME_SIZE_Y/2 - gTriggerY) / gScale + ADC_OFFSET + 0.5);
-}
-
-void UserInput(char button)
-{
-    // process user button presses
-    switch (button) {
-    case 'U': // up
-        switch (gAdjusting) {
-        case 0:
-            if (++gTimeSetting >= TIME_SCALE_STEPS)
-                gTimeSetting = TIME_SCALE_STEPS - 1;
-            OscilloscopeTimeScale();
-            break;
-        case 1:
-            if (++gVoltageSetting >= VOLTAGE_SCALE_STEPS)
-                gVoltageSetting = VOLTAGE_SCALE_STEPS - 1;
-            OscilloscopeVoltageScale();
-            OscilloscopeTriggerLevel();
-            break;
-        case 2:
-            if (--gTriggerY < 0)
-                gTriggerY = 0;
-            OscilloscopeTriggerLevel();
-            break;
-        }
-        break;
-    case 'D': // down
-        switch (gAdjusting) {
-        case 0:
-            if (--gTimeSetting < 0)
-                gTimeSetting = 0;
-            OscilloscopeTimeScale();
-            break;
-        case 1:
-            if (--gVoltageSetting < 0)
-                gVoltageSetting = 0;
-            OscilloscopeVoltageScale();
-            OscilloscopeTriggerLevel();
-            break;
-        case 2:
-            if (++gTriggerY >= FRAME_SIZE_Y)
-                gTriggerY = FRAME_SIZE_Y - 1;
-            OscilloscopeTriggerLevel();
-            break;
-        }
-        break;
-    case 'L': // left
-        if (--gAdjusting < 0) gAdjusting = 2;
-        break;
-    case 'R': // right
-        if (++gAdjusting > 2)   gAdjusting = 0;
-        break;
-    case 'S': // select
-        gTriggerRising = !gTriggerRising; // toggle trigger slope
-        break;
-    case 'A': // BoosterPack button 1
-        gSpectrumMode = !gSpectrumMode; // switch between spectrum and oscilloscope mode
-        break;
-    }
 }
 

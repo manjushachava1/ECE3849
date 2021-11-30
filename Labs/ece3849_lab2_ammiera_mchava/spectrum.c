@@ -12,12 +12,17 @@
 #include "settings.h"
 #include "buttons.h"
 #include "sampling.h"
+#include "settings.h"
 
 #define PI 3.14159265358979f
 #define NFFT 1024         // FFT length
 #define KISS_FFT_CFG_SIZE (sizeof(struct kiss_fft_state)+sizeof(kiss_fft_cpx)*(NFFT-1))
 #define DB_SCALE 20
 #define FREQ_SCALE 20
+#define VOLTAGE_SCALE 0.1
+#define OFFSET 0
+
+const float db_scale = DB_SCALE;
 
 
 
@@ -39,8 +44,8 @@ char str[50];
 void get_spec_samples(void) {
     static char kiss_fft_cfg_buffer[KISS_FFT_CFG_SIZE]; // Kiss FFT config memory
 
-    int ADC_buffer_idx = gADCBufferIndex - NFFT;
-    int kiss_fft_idx;
+    int ADC_buffer_idx = gADCBufferIndex - NFFT; // index in circular ADC buffer
+    int kiss_fft_idx; // index in FFT buffer
 
     cfg = kiss_fft_alloc(NFFT, 0, kiss_fft_cfg_buffer, &buffer_size); // init Kiss FFT
 
@@ -50,7 +55,6 @@ void get_spec_samples(void) {
         in[kiss_fft_idx].i = 0; // imaginary part of the waveform
 
         ADC_buffer_idx++;
-        kiss_fft_idx++;
     }
 }
 
@@ -71,25 +75,40 @@ void convert_to_dB(void) {
 }
 
 void scale_dB_to_grid(void) {
-    // the dB scale does not need to be calibrated to any specific voltage level,
-    // but the sprectrum peaks and the noise floor should be visible
+    float sample;
+    float sample_buffer[NFFT];
+    float fScale;
+    int i;
 
-    // TODO: trial and error
+    fScale = (VIN_RANGE * PIXELS_PER_DIV) / ((1 << ADC_BITS) * VOLTAGE_SCALE);
+
+    GrContextForegroundSet(&sContext, ClrYellow); // yellow text
+
+    for (i = 0; i < LCD_HORIZONTAL_MAX; i++)
+    {
+        sample = out_db[i];
+        sample_buffer[i] = ((int) (LCD_VERTICAL_MAX / 2))
+                - (int) (fScale * ((int) sample - OFFSET));
+        if (i != 0)
+        {
+            GrLineDraw(&sContext, i - 1, sample_buffer[i - 1], i, sample_buffer[i]);
+        }
+    }
 }
 
 void display_frequency_scale(void) {
     // Print volts per division
     snprintf(str, sizeof(str), "%i kHz", FREQ_SCALE);
     GrContextForegroundSet(&sContext, ClrWhite);
-    GrStringDraw(&sContext, str, /*length*/-1, /*x*/90, /*y*/3, /*opaque*/
+    GrStringDraw(&sContext, str, /*length*/-1, /*x*/5, /*y*/3, /*opaque*/
                  false);
 }
 
 void display_dB_scale(void) {
     // Print volts per division
-    snprintf(str, sizeof(str), "%.1f dB", DB_SCALE);
+    snprintf(str, sizeof(str), "%.1f dB", db_scale);
     GrContextForegroundSet(&sContext, ClrWhite);
-    GrStringDraw(&sContext, str, /*length*/-1, /*x*/50, /*y*/3, /*opaque*/
+    GrStringDraw(&sContext, str, /*length*/-1, /*x*/60, /*y*/3, /*opaque*/
                  false);
 }
 
@@ -137,18 +156,14 @@ void display_spec_grid(void) {
 }
 
 void display_spec_waveform(void) {
-    // copied and pased from settings.c
-    // should use the same logic
+    int i;
 
-    // TODO: implement code
-
-//    int i;
-//    for (i = 0; i < LCD_HORIZONTAL_MAX; i++)
-//    {
-//        if (i != 0)
-//        {
-//            GrLineDraw(&sContext, i - 1, displayADCBuffer[i - 1], i,
-//                       displayADCBuffer[i]);
-//        }
-//    }
+    for (i = 0; i < LCD_HORIZONTAL_MAX; i++)
+    {
+        if (i != 0)
+        {
+            GrLineDraw(&sContext, i - 1, out_db[i - 1], i,
+                       out_db[i]);
+        }
+    }
 }
