@@ -129,9 +129,12 @@ void display_task(UArg arg1, UArg arg2)
         if (gSpectrumMode)
         {
             // draw everything to the local frame buffer
-            OscilloscopeSpectrumDrawGrid(&sContext);
-            OscilloscopeSpectrumDrawSettings(&sContext);
-            GrContextForegroundSet(&sContext, ClrOrange); // orange waveform
+            scale_dB_to_grid();
+            display_spec_grid();
+            display_frequency_scale();
+            display_dB_scale();
+            display_spec_waveform();
+
             GrFlush(&sContext); // flush the frame buffer to the LCD
         }
         else
