@@ -10,7 +10,9 @@
 
 //// FUNCTIONS ////
 void get_spec_samples(void);
-void scale_dB_to_grid(void);
+void window_time_dom(void);
+void compute_FFT(void);
+void convert_to_dB(void);
 void display_frequency_scale(void);
 void display_dB_scale(void);
 void display_spec_grid(void);

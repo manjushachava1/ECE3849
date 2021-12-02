@@ -89,15 +89,11 @@ void waveform_task(UArg arg1, UArg arg2)
         Semaphore_pend(WaveformSem, BIOS_WAIT_FOREVER); // blocks until signaled
 
         Semaphore_pend(CSSem, BIOS_WAIT_FOREVER);
-
         if (gSpectrumMode) // spectrum mode
         {
             if (!bIsSpecSampled)
             {
                 get_spec_samples();
-                compute_FFT();
-                convert_to_dB();
-                bIsSpecSampled = 1;
             }
         }
         else
@@ -107,7 +103,6 @@ void waveform_task(UArg arg1, UArg arg2)
             gVoltageScale = GetVoltageScale();
             ADCSampleScaling(gVoltageScale);
         }
-
         Semaphore_post(CSSem);
 
         Semaphore_post(ProcessingSem); // signals processing task
@@ -127,15 +122,15 @@ void display_task(UArg arg1, UArg arg2)
         GrContextForegroundSet(&sContext, ClrBlack);
         GrRectFill(&sContext, &rectFullScreen); // fill screen with black
 
+
+
         if (gSpectrumMode)
         {
 //             draw everything to the local frame buffer
-//            scale_dB_to_grid();
-            display_spec_grid();
-            display_frequency_scale();
-            display_dB_scale();
-            display_spec_waveform();
-            GrFlush(&sContext); // flush the frame buffer to the LCD
+           display_spec_grid();
+           display_frequency_scale();
+           display_dB_scale();
+           display_spec_waveform();
         }
         else
         {
@@ -146,9 +141,9 @@ void display_task(UArg arg1, UArg arg2)
             WriteVoltageScale(gVoltageScale);
             GrFlush(&sContext); // flush the frame buffer to the LCD
             ADCSampleScaling(gVoltageScale);
-            GrFlush(&sContext); // flush the frame buffer to the LCD
-
         }
+        GrFlush(&sContext); // flush the frame buffer to the LCD
+        GrFlush(&sContext); // flush the frame buffer to the LCD
     }
 }
 
@@ -157,6 +152,15 @@ void processing_task(UArg arg1, UArg arg2)
     while (true)
     {
         Semaphore_pend(ProcessingSem, BIOS_WAIT_FOREVER);
+
+        if (gSpectrumMode && !bIsSpecSampled) {
+            window_time_dom();
+            compute_FFT();
+            convert_to_dB();
+            bIsSpecSampled = 1;
+
+        }
+
         Semaphore_post(DisplaySem); // request update of the display
         Semaphore_post(WaveformSem); // request another waveform acquisition
     }
