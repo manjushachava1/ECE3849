@@ -44,27 +44,25 @@ uint32_t gButtonMissedDeadlines = 0;
 
 int bIsSpecSampled = 0; // false
 
+//// FUNCTIONS ////
 
- //// FUNCTIONS ////
-
- // METHOD CALL: RTOS?
- // DESCRIPTION:
- //      1. Searches for trigger in ADC buffer
- //      2. Copies the trigger's waveform into the waveform buffer
- //      3. Signals the Processing Task
- //      4. Blocks
- // INPUTS:
- //      * arg1 - ?
- //      * arg2 - ?
- // OUTPUTS: void
- // AUTHOR: ammiera
- // REVISION HISTORY: 11/19/2021
- // NOTES: NA
- // TODO:
- //      * Need to figure out what is calling this task
- //      * Need to figure out what arg0 and arg1 is for
- //      * Testing
-
+// METHOD CALL: RTOS?
+// DESCRIPTION:
+//      1. Searches for trigger in ADC buffer
+//      2. Copies the trigger's waveform into the waveform buffer
+//      3. Signals the Processing Task
+//      4. Blocks
+// INPUTS:
+//      * arg1 - ?
+//      * arg2 - ?
+// OUTPUTS: void
+// AUTHOR: ammiera
+// REVISION HISTORY: 11/19/2021
+// NOTES: NA
+// TODO:
+//      * Need to figure out what is calling this task
+//      * Need to figure out what arg0 and arg1 is for
+//      * Testing
 
 void user_input_task(UArg arg1, UArg arg2)
 {
@@ -92,15 +90,18 @@ void waveform_task(UArg arg1, UArg arg2)
 
         Semaphore_pend(CSSem, BIOS_WAIT_FOREVER);
 
-        if (gSpectrumMode)
+        if (gSpectrumMode) // spectrum mode
         {
-            if(!bIsSpecSampled) {
+            if (!bIsSpecSampled)
+            {
                 get_spec_samples();
                 compute_FFT();
                 convert_to_dB();
                 bIsSpecSampled = 1;
             }
-        } else {
+        }
+        else
+        {
             triggerIndex = RisingTrigger(); // finds trigger index
             CopySignal(triggerIndex); // copies signal starting from and ending 1/2 way behind the trigger index
             gVoltageScale = GetVoltageScale();
@@ -128,13 +129,12 @@ void display_task(UArg arg1, UArg arg2)
 
         if (gSpectrumMode)
         {
-            // draw everything to the local frame buffer
-            scale_dB_to_grid();
+//             draw everything to the local frame buffer
+//            scale_dB_to_grid();
             display_spec_grid();
             display_frequency_scale();
             display_dB_scale();
             display_spec_waveform();
-
             GrFlush(&sContext); // flush the frame buffer to the LCD
         }
         else
@@ -147,15 +147,16 @@ void display_task(UArg arg1, UArg arg2)
             GrFlush(&sContext); // flush the frame buffer to the LCD
             ADCSampleScaling(gVoltageScale);
             GrFlush(&sContext); // flush the frame buffer to the LCD
+
         }
     }
 }
 
 void processing_task(UArg arg1, UArg arg2)
 {
-    while (true) {
+    while (true)
+    {
         Semaphore_pend(ProcessingSem, BIOS_WAIT_FOREVER);
-
         Semaphore_post(DisplaySem); // request update of the display
         Semaphore_post(WaveformSem); // request another waveform acquisition
     }

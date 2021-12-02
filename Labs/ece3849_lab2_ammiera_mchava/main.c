@@ -24,12 +24,12 @@
 #include "Crystalfontz128x128_ST7735.h"
 
 // Code header files
- #include "sampling.h"
- #include "string.h"
- #include "fifo.h"
- #include "settings.h"
- #include "buttons.h"
- #include <math.h>
+#include "sampling.h"
+#include "string.h"
+#include "fifo.h"
+#include "settings.h"
+#include "buttons.h"
+#include <math.h>
 
 
 
