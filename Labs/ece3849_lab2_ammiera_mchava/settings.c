@@ -37,7 +37,7 @@
 #include "settings.h"
 #include "buttons.h"
 #include "sampling.h"
-
+#include "oscilloscope.h"
 
 
 //// GLOBAL VARIABLES ////
@@ -59,6 +59,13 @@ float const cVoltageScales[] = { 0.1, 0.2, 0.5, 1, 2 };
 const char S1 = 'a';
 const char S2 = 'b';
 const char NA = 'c';
+
+
+// time scale display strings
+static const char * const gTimeScaleStr[TIME_SCALE_STEPS] =
+        { " 20 us", " 50 us", "100 us", "200 us", "500 us", "  1 ms", "  2 ms",
+          "  5 ms", " 10 ms", " 20 ms", " 50 ms", "100 ms" };
+
 
 // CPU Variables
 uint32_t count_unloaded = 0;
@@ -168,7 +175,9 @@ void DrawGrid(void)
 void WriteTimeScale(int timeScale)
 {
     GrContextForegroundSet(&sContext, ClrWhite); // white text
-    GrStringDrawCentered(&sContext, "20 us", 5, 20, 5, 1);
+//    GrStringDrawCentered(&sContext, timeScale + " us", 5, 20, 5, 1);
+    GrStringDraw(&sContext, gTimeScaleStr[gTimeSetting], /*length*/-1, /*x*/0, /*y*/
+                     0, /*opaque*/false);
 }
 
 void WriteVoltageScale(float voltageScale)

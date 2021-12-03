@@ -20,6 +20,7 @@
 #define DB_SCALE 20
 #define OFFSET 15
 #define SCREEN_WIDTH 128
+#define FREQ_SCALE 20
 
 const float db_scale = DB_SCALE;
 
@@ -80,12 +81,11 @@ void convert_to_dB(void) {
     }
 }
 
-void display_frequency_scale(void) {
+void display_frequency_scale(void){
     // Print volts per division
     snprintf(str, sizeof(str), "%i kHz", FREQ_SCALE);
     GrContextForegroundSet(&sContext, ClrWhite);
-    GrStringDraw(&sContext, str, /*length*/-1, /*x*/20, /*y*/3, /*opaque*/
-                 false);
+    GrStringDraw(&sContext, str, /*length*/-1, /*x*/20, /*y*/3, /*opaque*/false);
 }
 
 void display_dB_scale(void) {

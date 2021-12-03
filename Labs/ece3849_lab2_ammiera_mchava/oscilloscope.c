@@ -29,7 +29,7 @@
 #include "spectrum.h"
 
 // time scale display strings
-static const char *const gTimeScaleStr[TIME_SCALE_STEPS] =
+static const char * const gTimeScaleStr[TIME_SCALE_STEPS] =
         { " 20 us", " 50 us", "100 us", "200 us", "500 us", "  1 ms", "  2 ms",
           "  5 ms", " 10 ms", " 20 ms", " 50 ms", "100 ms" };
 
@@ -62,7 +62,6 @@ static const float gVoltsPerDiv[VOLTAGE_SCALE_STEPS] = { 0.1, 0.2, 0.5, 1.0 };
 
 static int16_t gWaveformBuffer[NFFT];	        // waveform buffer
 static int16_t gProcessedWaveform[FRAME_SIZE_X];// processed waveform for display
-int gTimeSetting = 0;							// time scale index
 static int gVoltageSetting = 2;		            // voltage scale index
 static int gTriggerY = FRAME_SIZE_Y / 2;// trigger level y-coordinate on the LCD
 static bool gTriggerRising = true;			    // trigger slope spec
@@ -72,6 +71,7 @@ static float gScale;		// floating point ADC to pixels conversion factor
 extern bool gSpectrumMode = false; // true if FFT mode, false if time domain mode
 
 extern uint32_t gSystemClock;
+extern int gTimeSetting = 0;                           // time scale index
 extern tContext sContext;  // grlib context
 
 // benchmarking variables
@@ -319,37 +319,3 @@ void OscilloscopeDrawWaveform(tContext *psContext)
         GrLineDraw(psContext, i - 1, y_last, i, y);
     }
 }
-
-//void waveform_task(UArg arg0, UArg arg1)
-//{
-//    int trigger_index;
-//
-//    OscilloscopeVoltageScale(); // init oscilloscope settings
-//    OscilloscopeTimeScale();
-//    OscilloscopeTriggerLevel();
-//
-//    IntMasterEnable();
-//
-//    while (true)
-//    {
-//        Semaphore_pend(WaveformSem, BIOS_WAIT_FOREVER);
-//
-//        if (!gSpectrumMode)
-//        { // time domain mode
-//            uint32_t trigger_start = Timestamp_get32();
-//            trigger_index = OscilloscopeTrigger();
-//            OscilloscopeCopyWaveform(trigger_index - FRAME_SIZE_X / 2,
-//            FRAME_SIZE_X); // copy triggered waveform to a local buffer
-//            uint32_t trigger_search_time = Timestamp_get32() - trigger_start;
-//            if (trigger_search_time > gTriggerSearchTime)
-//                gTriggerSearchTime = trigger_search_time;
-//        }
-//        else
-//        { // spectrum mode
-//            OscilloscopeCopyWaveform(gADCBufferIndex - NFFT + 1, NFFT);
-//        }
-//
-//        Semaphore_post(ProcessingSem);  // signal Waveform Processing task
-//    }
-//}
-
