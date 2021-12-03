@@ -19,11 +19,6 @@
 #define TOP_SCREEN 128
 #define LEFTMOST_SCREEN 0
 #define RIGHTMOST_SCREEN 128
-#define TIME_SCALE_STEPS 12     // # of different time scales
-#define VOLTAGE_SCALE_STEPS 4   // # of different voltage scales
-#define FRAME_SIZE_X LCD_HORIZONTAL_MAX // screen dimensions
-#define FRAME_SIZE_Y LCD_VERTICAL_MAX
-#define ADC_RANGE 3.3
 
 //// GLOBAL VARIABLES ////
 extern uint32_t count_unloaded;
@@ -47,9 +42,6 @@ void WriteVoltageScale(float voltageScale);
 void ADCSampleScaling(float voltageScale);
 void DrawFrame(void);
 uint32_t WriteCPULoad(int flag);
-void OscilloscopeTimeScale(void);
-void OscilloscopeVoltageScale(void);
-void OscilloscopeTriggerLevel(void);
 void UserInput(char button);
 
 #endif /* SETTINGS_H_ */
