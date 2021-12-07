@@ -40,5 +40,6 @@ void SignalInit(void);
 void ADCInit(void);
 int RisingTrigger(void);
 void CopySignal(int triggerIndex);
+void DMA_Init(void);
 
 #endif /* SAMPLING_H_ */

@@ -60,6 +60,7 @@ int main(void)
     SignalInit(); // initialize signal generator hardware
     ADCInit(); // initialize ADC
     ButtonInit(); // initialize board buttons
+    DMA_Init();
 
     GrContextInit(&sContext, &g_sCrystalfontz128x128); // Initialize the grlib graphics context
     GrContextFontSet(&sContext, &g_sFontFixed6x8); // select font

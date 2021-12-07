@@ -38,6 +38,7 @@
 #include "fifo.h"
 #include "settings.h"
 #include "buttons.h"
+#include "driverlib/udma.h"
 
 // XDCtools Header files
 #include <xdc/std.h>
@@ -58,6 +59,11 @@ volatile uint16_t gADCBuffer[ADC_BUFFER_SIZE];
 uint32_t gADCSamplingRate = 0;
 uint16_t stableADCBuffer[ADC_BUFFER_SIZE];
 extern uint32_t gSystemClock; // [Hz] system clock frequency
+
+// DMA
+#pragma DATA_ALIGN(gDMAControlTable, 1024) // address alignment required
+tDMAControlTable gDMAControlTable[64];     // uDMA control table (global)
+
 
 
 
@@ -149,6 +155,39 @@ void ADCInit(void) {
 
 }
 
+// METHOD CALL: main.c
+// DESCRIPTION: initializes DMA controller
+// INPUTS: void
+// OUTPUTS: void
+// AUTHOR: professor
+// REVISION HISTORY: NA
+// NOTES: NA
+// TODO: NA
+void DMA_Init(void) {
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_UDMA);
+    uDMAEnable();
+    uDMAControlBaseSet(gDMAControlTable);
+
+    uDMAChannelAssign(UDMA_CH24_ADC1_0); // assign DMA channel 24 to ADC1 sequence 0
+    uDMAChannelAttributeDisable(UDMA_SEC_CHANNEL_ADC10, UDMA_ATTR_ALL);
+
+    // primary DMA channel = first half of the ADC buffer
+    uDMAChannelControlSet(UDMA_SEC_CHANNEL_ADC10 | UDMA_PRI_SELECT,
+        UDMA_SIZE_16 | UDMA_SRC_INC_NONE | UDMA_DST_INC_16 | UDMA_ARB_4);
+    uDMAChannelTransferSet(UDMA_SEC_CHANNEL_ADC10 | UDMA_PRI_SELECT,
+        UDMA_MODE_PINGPONG, (void*)&ADC1_SSFIFO0_R,
+        (void*)&gADCBuffer[0], ADC_BUFFER_SIZE/2);
+
+    // alternate DMA channel = second half of the ADC buffer
+    uDMAChannelControlSet(UDMA_SEC_CHANNEL_ADC10 | UDMA_ALT_SELECT,
+        UDMA_SIZE_16 | UDMA_SRC_INC_NONE | UDMA_DST_INC_16 | UDMA_ARB_4);
+    uDMAChannelTransferSet(UDMA_SEC_CHANNEL_ADC10 | UDMA_ALT_SELECT,
+        UDMA_MODE_PINGPONG, (void*)&ADC1_SSFIFO0_R,
+        (void*)&gADCBuffer[ADC_BUFFER_SIZE/2], ADC_BUFFER_SIZE/2);
+
+    uDMAChannelEnable(UDMA_SEC_CHANNEL_ADC10);
+}
+
 // METHOD CALL: RTOS?
 // DESCRIPTION: samples analog signal
 // INPUTS:
@@ -225,5 +264,7 @@ void CopySignal(int triggerIndex)
         j++;
     }
 }
+
+
 
 
