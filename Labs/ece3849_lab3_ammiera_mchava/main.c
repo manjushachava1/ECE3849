@@ -43,6 +43,16 @@ tContext sContext;
 
 
 //// MAIN FUNCTION ////
+
+// METHOD CALL: main.c
+// DESCRIPTION: initializes system
+// INPUTS: void
+// OUTPUTS: void
+// AUTHOR: professor
+// REVISION HISTORY: NA
+// NOTES:
+//      - Does ADCInit() go before DMA_Init()?
+// TODO: NA
 int main(void)
 {
     IntMasterDisable();

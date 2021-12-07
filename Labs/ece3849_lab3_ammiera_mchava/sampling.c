@@ -63,6 +63,7 @@ extern uint32_t gSystemClock; // [Hz] system clock frequency
 // DMA
 #pragma DATA_ALIGN(gDMAControlTable, 1024) // address alignment required
 tDMAControlTable gDMAControlTable[64];     // uDMA control table (global)
+volatile bool gDMAPrimary = true; // is DMA occurring in the primary channel?
 
 
 
@@ -153,6 +154,8 @@ void ADCInit(void) {
     TimerConfigure(TIMER1_BASE, TIMER_CFG_PERIODIC);
     TimerControlTrigger(TIMER1_BASE, TIMER_A, true);
 
+
+
 }
 
 // METHOD CALL: main.c
@@ -186,6 +189,11 @@ void DMA_Init(void) {
         (void*)&gADCBuffer[ADC_BUFFER_SIZE/2], ADC_BUFFER_SIZE/2);
 
     uDMAChannelEnable(UDMA_SEC_CHANNEL_ADC10);
+
+    ADCSequenceDMAEnable(ADC1_BASE, 0); // enable DMA for ADC1 sequence 0
+    ADCIntEnableEx(ADC1_BASE, ADC_INT_DMA_SS0); // enable ADC1 sequence 0 DMA interrupt
+    // see https://software-dl.ti.com/simplelink/esd/simplelink_msp432e4_sdk/2.30.00.14/docs/driverlib/msp432e4/html/group__adc__api.html#gae1acb71806ec0cec55290c938fa8cc02
+    // for information on ADCIntEnableEx
 }
 
 // METHOD CALL: RTOS?
@@ -201,6 +209,24 @@ void DMA_Init(void) {
 //      * Need to figure out what arg0 is for
 //      * Testing
 void ISR0_ADC(UArg arg0) {
+
+//    ADCIntClearEx(...); // clear the ADC1 sequence 0 DMA interrupt flag
+//
+//    // Check the primary DMA channel for end of transfer, and restart if needed.
+//    if (uDMAChannelModeGet(UDMA_SEC_CHANNEL_ADC10 | UDMA_PRI_SELECT) ==
+//            UDMA_MODE_STOP) {
+//        uDMAChannelTransferSet(...); // restart the primary channel (same as setup)
+//        gDMAPrimary = false;    // DMA is currently occurring in the alternate buffer
+//    }
+//
+//    // Check the alternate DMA channel for end of transfer, and restart if needed.
+//    // Also set the gDMAPrimary global.
+//    <...>
+//
+//    // The DMA channel may be disabled if the CPU is paused by the debugger.
+//    if (!uDMAChannelIsEnabled(UDMA_SEC_CHANNEL_ADC10)) {
+//        uDMAChannelEnable(UDMA_SEC_CHANNEL_ADC10);  // re-enable the DMA channel
+//    }
 
     ADC1_ISC_R = ADC_ISC_IN0; // clears ADC interrupt flag
     if (ADC1_OSTAT_R & ADC_OSTAT_OV0)
