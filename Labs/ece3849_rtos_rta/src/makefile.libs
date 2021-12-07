@@ -1,6 +1,6 @@
 #
 # This file was generated based on the configuration script:
-#     C:\Users\alexm\git\ECE3849\Labs\ece3849_lab3_ammiera_mchava\rtos.cfg
+#     C:\Users\alexm\git\ECE3849\Labs\ece3849_rtos_rta\rtos.cfg
 #
 # This makefile may be included in other makefiles that need to build
 # the libraries containing the compiled source files generated as
@@ -14,7 +14,7 @@
 #
 # The absolute path to the generated source directory (at the time the
 # sources were generated) is:
-#    C:\Users\alexm\git\ECE3849\Labs\ece3849_lab3_ammiera_mchava\src
+#    C:\Users\alexm\git\ECE3849\Labs\ece3849_rtos_rta\src
 #
 GEN_SRC_DIR ?= ../src
 
