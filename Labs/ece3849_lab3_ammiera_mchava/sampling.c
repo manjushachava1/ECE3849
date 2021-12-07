@@ -249,27 +249,27 @@ void ISR0_ADC(UArg arg0) {
 // REVISION HISTORY: 11/12/2021
 // NOTES: NA
 // TODO: NA
-int RisingTrigger(void)
-{
-// Step 1
-    int triggerIndex = gADCBufferIndex - HALF_SCREEN_IDX; // half screen width; don't use a magic number;
-
-    // Step 2
-    int triggerSearchStop = triggerIndex - (ADC_BUFFER_SIZE / 2);
-    for (; triggerIndex > triggerSearchStop; triggerIndex--)
-    {
-        // if trigger is found
-        if (gADCBuffer[ADC_BUFFER_WRAP(triggerIndex)] >= ADC_OFFSET && /* checks current sample */
-        gADCBuffer[ADC_BUFFER_WRAP(triggerIndex) + 1] < ADC_OFFSET /* checks next older sample */)
-            break;
-    }
-
-    // Step 3
-    if (triggerIndex == triggerSearchStop) // for loop ran to the end
-        triggerIndex = gADCBufferIndex - HALF_SCREEN_IDX; // reset trigger search index back to how it was initialized
-
-    return triggerIndex;
-}
+//int RisingTrigger(void)
+//{
+//// Step 1
+//    int triggerIndex = gADCBufferIndex - HALF_SCREEN_IDX; // half screen width; don't use a magic number;
+//
+//    // Step 2
+//    int triggerSearchStop = triggerIndex - (ADC_BUFFER_SIZE / 2);
+//    for (; triggerIndex > triggerSearchStop; triggerIndex--)
+//    {
+//        // if trigger is found
+//        if (gADCBuffer[ADC_BUFFER_WRAP(triggerIndex)] >= ADC_OFFSET && /* checks current sample */
+//        gADCBuffer[ADC_BUFFER_WRAP(triggerIndex) + 1] < ADC_OFFSET /* checks next older sample */)
+//            break;
+//    }
+//
+//    // Step 3
+//    if (triggerIndex == triggerSearchStop) // for loop ran to the end
+//        triggerIndex = gADCBufferIndex - HALF_SCREEN_IDX; // reset trigger search index back to how it was initialized
+//
+//    return triggerIndex;
+//}
 
 // METHOD CALL: main.c
 // DESCRIPTION: copies signal starting from and ending 1/2 way behind the trigger index
@@ -291,6 +291,20 @@ void CopySignal(int triggerIndex)
         stableADCBuffer[j] = gADCBuffer[ADC_BUFFER_WRAP(i)]; // gets current sample
         j++;
     }
+}
+
+int32_t getADCBufferIndex(void)
+{
+    int32_t index;
+    if (gDMAPrimary) {  // DMA is currently in the primary channel
+        index = ADC_BUFFER_SIZE/2 - 1 -
+                uDMAChannelSizeGet(UDMA_SEC_CHANNEL_ADC10 | UDMA_PRI_SELECT);
+    }
+    else {              // DMA is currently in the alternate channel
+        index = ADC_BUFFER_SIZE - 1 -
+                uDMAChannelSizeGet(UDMA_SEC_CHANNEL_ADC10 | UDMA_ALT_SELECT);
+    }
+    return index;
 }
 
 
