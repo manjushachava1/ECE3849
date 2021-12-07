@@ -210,32 +210,34 @@ void DMA_Init(void) {
 //      * Testing
 void ISR0_ADC(UArg arg0) {
 
-//    ADCIntClearEx(...); // clear the ADC1 sequence 0 DMA interrupt flag
-//
-//    // Check the primary DMA channel for end of transfer, and restart if needed.
-//    if (uDMAChannelModeGet(UDMA_SEC_CHANNEL_ADC10 | UDMA_PRI_SELECT) ==
-//            UDMA_MODE_STOP) {
-//        uDMAChannelTransferSet(...); // restart the primary channel (same as setup)
-//        gDMAPrimary = false;    // DMA is currently occurring in the alternate buffer
-//    }
-//
-//    // Check the alternate DMA channel for end of transfer, and restart if needed.
-//    // Also set the gDMAPrimary global.
-//    <...>
-//
-//    // The DMA channel may be disabled if the CPU is paused by the debugger.
-//    if (!uDMAChannelIsEnabled(UDMA_SEC_CHANNEL_ADC10)) {
-//        uDMAChannelEnable(UDMA_SEC_CHANNEL_ADC10);  // re-enable the DMA channel
-//    }
+    ADCIntClearEx(ADC1_BASE, ADC_INT_DMA_SS0); // clear the ADC1 sequence 0 DMA interrupt flag
 
-    ADC1_ISC_R = ADC_ISC_IN0; // clears ADC interrupt flag
-    if (ADC1_OSTAT_R & ADC_OSTAT_OV0)
-    { // check for ADC FIFO overflow
-        gADCErrors++;                   // count errors
-        ADC1_OSTAT_R = ADC_OSTAT_OV0;   // clear overflow condition
+    if (uDMAChannelModeGet(UDMA_SEC_CHANNEL_ADC10 | UDMA_PRI_SELECT) ==
+            UDMA_MODE_STOP) { // checks if primary channel is being used
+
+        // checks the primary DMA channel for end of transfer, and restart if needed
+        uDMAChannelTransferSet(UDMA_SEC_CHANNEL_ADC10 | UDMA_ALT_SELECT,
+                               UDMA_MODE_PINGPONG, (void*)&ADC1_SSFIFO0_R,
+                               (void*)&gADCBuffer[ADC_BUFFER_SIZE/2], ADC_BUFFER_SIZE/2); // restart the primary channel (same as setup)
+        gDMAPrimary = false; // DMA is currently occurring in the alternate buffer
     }
-    gADCBuffer[gADCBufferIndex = ADC_BUFFER_WRAP(gADCBufferIndex + 1)] =
-    ADC1_SSFIFO0_R;         // read sample from the ADC1 sequence 0 FIFO
+
+
+    if (uDMAChannelModeGet(UDMA_SEC_CHANNEL_ADC10 | UDMA_ALT_SELECT) ==
+            UDMA_MODE_STOP) { // checks if alternate channel is being used
+
+        // checks the alternate DMA channel for end of transfer, and restart if needed
+        uDMAChannelTransferSet(UDMA_SEC_CHANNEL_ADC10 | UDMA_PRI_SELECT,
+                               UDMA_MODE_PINGPONG, (void*)&ADC1_SSFIFO0_R,
+                               (void*)&gADCBuffer[ADC_BUFFER_SIZE/2], ADC_BUFFER_SIZE/2); // restart the secondary channel (same as setup)
+
+        gDMAPrimary = true; // DMA is currently occurring in the primary buffer
+    }
+
+    // The DMA channel may be disabled if the CPU is paused by the debugger.
+    if (!uDMAChannelIsEnabled(UDMA_SEC_CHANNEL_ADC10)) {
+        uDMAChannelEnable(UDMA_SEC_CHANNEL_ADC10);  // re-enable the DMA channel
+    }
 }
 
 // METHOD CALL: main.c
