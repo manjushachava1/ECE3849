@@ -10,6 +10,9 @@
 //// INCLUDES & DEFINES ////
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <math.h>
+#include "Crystalfontz128x128_ST7735.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_ints.h"
 #include "inc/tm4c1294ncpdt.h"
@@ -17,28 +20,18 @@
 #include "driverlib/gpio.h"
 #include "driverlib/timer.h"
 #include "driverlib/interrupt.h"
-#include "driverlib/adc.h"
-#include "sampling.h"
-#include <stdint.h>
-#include <stdbool.h>
+#include "driverlib/udma.h"
 #include "driverlib/fpu.h"
 #include "driverlib/sysctl.h"
-#include "driverlib/interrupt.h"
-#include "Crystalfontz128x128_ST7735.h"
-#include <stdio.h>
-#include "buttons.h"
-#include <math.h>
-#include "inc/hw_memmap.h"
-#include "driverlib/gpio.h"
 #include "driverlib/pwm.h"
 #include "driverlib/pin_map.h"
-#include "driverlib/timer.h"
+#include "driverlib/adc.h"
 #include "sampling.h"
 #include "string.h"
 #include "fifo.h"
 #include "settings.h"
 #include "buttons.h"
-#include "driverlib/udma.h"
+#include "sampling.h"
 
 // XDCtools Header files
 #include <xdc/std.h>
