@@ -41,5 +41,6 @@ void ADCInit(void);
 int RisingTrigger(void);
 void CopySignal(int triggerIndex);
 void DMA_Init(void);
+int32_t getADCBufferIndex(void);
 
 #endif /* SAMPLING_H_ */

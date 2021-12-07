@@ -41,13 +41,14 @@
 // BIOS Header files
 #include <ti/sysbios/BIOS.h>
 #include <ti/sysbios/knl/Task.h>
+#include <ti/sysbios/knl/Event.h>
 
 
 
 
 //// GLOBAL VARIABLES ////
 volatile uint32_t gADCErrors; // number of missed ADC deadlines
-volatile int32_t gADCBufferIndex = ADC_BUFFER_SIZE - 1; // latest sample index
+// volatile int32_t gADCBufferIndex = ADC_BUFFER_SIZE - 1; // latest sample index
 volatile uint16_t gADCBuffer[ADC_BUFFER_SIZE];
 uint32_t gADCSamplingRate = 0;
 uint16_t stableADCBuffer[ADC_BUFFER_SIZE];
@@ -274,7 +275,7 @@ void ISR0_ADC(UArg arg0) {
 // REVISION HISTORY: 11/12/2021
 // NOTES: NA
 // TODO: NA
-void CopySignal(int triggerIndex)
+void CopySignal(int32_t triggerIndex)
 {
     int i = triggerIndex - (ADC_BUFFER_SIZE / 2); // indexes samples
     int j = 0; // keeps track of local buffer index
@@ -289,6 +290,9 @@ void CopySignal(int triggerIndex)
 int32_t getADCBufferIndex(void)
 {
     int32_t index;
+    IArg key;
+
+    key = GateHwi_enter(gateHwi0);
     if (gDMAPrimary) {  // DMA is currently in the primary channel
         index = ADC_BUFFER_SIZE/2 - 1 -
                 uDMAChannelSizeGet(UDMA_SEC_CHANNEL_ADC10 | UDMA_PRI_SELECT);
@@ -297,6 +301,8 @@ int32_t getADCBufferIndex(void)
         index = ADC_BUFFER_SIZE - 1 -
                 uDMAChannelSizeGet(UDMA_SEC_CHANNEL_ADC10 | UDMA_ALT_SELECT);
     }
+    GateHwi_leave(gateHwi0, key);
+
     return index;
 }
 

@@ -81,7 +81,7 @@ void user_input_task(UArg arg1, UArg arg2)
 void waveform_task(UArg arg1, UArg arg2)
 {
     IntMasterEnable();
-    int triggerIndex;
+    int32_t triggerIndex;
 
     while (1)
     {
