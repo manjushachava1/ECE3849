@@ -82,6 +82,7 @@ void waveform_task(UArg arg1, UArg arg2)
 {
     IntMasterEnable();
     int32_t triggerIndex;
+    int32_t bufferIndex;
 
     while (1)
     {
@@ -98,8 +99,9 @@ void waveform_task(UArg arg1, UArg arg2)
         }
         else
         {
-            // triggerIndex = RisingTrigger(); // finds trigger index
-            triggerIndex = getADCBufferIndex();
+            bufferIndex = getADCBufferIndex();
+            triggerIndex = RisingTrigger(bufferIndex); // finds trigger index
+
             CopySignal(triggerIndex); // copies signal starting from and ending 1/2 way behind the trigger index
             gVoltageScale = GetVoltageScale();
             ADCSampleScaling(gVoltageScale);

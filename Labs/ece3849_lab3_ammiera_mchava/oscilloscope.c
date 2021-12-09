@@ -266,35 +266,35 @@ void OscilloscopeSpectrumDrawSettings(tContext *psContext)
                  false);
 }
 
-int OscilloscopeTrigger(void)	// search for the trigger
-{
-    int x_initial = gADCBufferIndex - FRAME_SIZE_X / 2;
-    int x = x_initial;
-    int i, y, y_last;
-
-    y_last = gADCBuffer[ADC_BUFFER_WRAP(x)];
-    if (gTriggerRising)
-    {
-        for (i = 0; i < ADC_BUFFER_SIZE / 2; i++, y_last = y)
-        {
-            y = gADCBuffer[ADC_BUFFER_WRAP(--x)]; // step back and read value
-            if (y <= gTriggerLevel && y_last > gTriggerLevel)
-                break;
-        }
-    }
-    else
-    { // falling slope
-        for (i = 0; i < ADC_BUFFER_SIZE / 2; i++, y_last = y)
-        {
-            y = gADCBuffer[ADC_BUFFER_WRAP(--x)]; // step back and read value
-            if (y >= gTriggerLevel && y_last < gTriggerLevel)
-                break;
-        }
-    }
-    if (i >= ADC_BUFFER_SIZE / 2) // trigger was not found
-        x = x_initial;
-    return x;
-}
+//int OscilloscopeTrigger(void)	// search for the trigger
+//{
+//    int x_initial = gADCBufferIndex - FRAME_SIZE_X / 2;
+//    int x = x_initial;
+//    int i, y, y_last;
+//
+//    y_last = gADCBuffer[ADC_BUFFER_WRAP(x)];
+//    if (gTriggerRising)
+//    {
+//        for (i = 0; i < ADC_BUFFER_SIZE / 2; i++, y_last = y)
+//        {
+//            y = gADCBuffer[ADC_BUFFER_WRAP(--x)]; // step back and read value
+//            if (y <= gTriggerLevel && y_last > gTriggerLevel)
+//                break;
+//        }
+//    }
+//    else
+//    { // falling slope
+//        for (i = 0; i < ADC_BUFFER_SIZE / 2; i++, y_last = y)
+//        {
+//            y = gADCBuffer[ADC_BUFFER_WRAP(--x)]; // step back and read value
+//            if (y >= gTriggerLevel && y_last < gTriggerLevel)
+//                break;
+//        }
+//    }
+//    if (i >= ADC_BUFFER_SIZE / 2) // trigger was not found
+//        x = x_initial;
+//    return x;
+//}
 
 void OscilloscopeCopyWaveform(int x, int n)
 // x = starting index in the ADC buffer

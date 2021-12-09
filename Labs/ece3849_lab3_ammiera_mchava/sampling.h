@@ -30,7 +30,7 @@
 extern volatile uint16_t gADCBuffer[ADC_BUFFER_SIZE]; // circular buffer
 extern uint16_t stableADCBuffer[ADC_BUFFER_SIZE];
 extern volatile uint32_t gADCErrors; // number of missed ADC deadlines
-extern volatile int32_t gADCBufferIndex; // latest sample index
+// extern volatile int32_t gADCBufferIndex; // latest sample index
 
 
 
@@ -38,7 +38,7 @@ extern volatile int32_t gADCBufferIndex; // latest sample index
 //// FUNCTION HEADERS ////
 void SignalInit(void);
 void ADCInit(void);
-// int RisingTrigger(void);
+int RisingTrigger(int32_t bufferIndex);
 void CopySignal(int32_t triggerIndex);
 void DMA_Init(void);
 int32_t getADCBufferIndex(void);
