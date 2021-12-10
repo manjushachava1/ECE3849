@@ -170,6 +170,8 @@ void DrawGrid(void)
     GrLineDrawH(&sContext, LEFTMOST_SCREEN, RIGHTMOST_SCREEN,
                 (y + (20 * i) + y));
 
+    GrFlush(&sContext); // flush the frame buffer to the LCD
+
 }
 
 void WriteTimeScale(int timeScale)
@@ -178,6 +180,7 @@ void WriteTimeScale(int timeScale)
 //    GrStringDrawCentered(&sContext, timeScale + " us", 5, 20, 5, 1);
     GrStringDraw(&sContext, gTimeScaleStr[gTimeSetting], /*length*/-1, /*x*/0, /*y*/
                      0, /*opaque*/false);
+    GrFlush(&sContext); // flush the frame buffer to the LCD
 }
 
 void WriteVoltageScale(float voltageScale)
@@ -187,6 +190,7 @@ void WriteVoltageScale(float voltageScale)
     GrContextForegroundSet(&sContext, ClrWhite);
     GrStringDraw(&sContext, str, /*length*/-1, /*x*/50, /*y*/3, /*opaque*/
                  false);
+    GrFlush(&sContext); // flush the frame buffer to the LCD
 }
 
 void ADCSampleScaling(float voltageScale)
@@ -208,6 +212,7 @@ void ADCSampleScaling(float voltageScale)
             GrLineDraw(&sContext, i - 1, y[i - 1], i, y[i]);
         }
     }
+    GrFlush(&sContext); // flush the frame buffer to the LCD
 }
 
 /*
@@ -246,6 +251,7 @@ void DrawTriggerSlope(void)
 
     // draws the trigger
     GrLineDrawH(&sContext, xTrig1, xTrig2, yTrig);
+    GrFlush(&sContext); // flush the frame buffer to the LCD
 }
 
 uint32_t WriteCPULoad(int flag)
@@ -264,6 +270,7 @@ uint32_t WriteCPULoad(int flag)
         snprintf(str, sizeof(str), "CPU Load = %.2f %%", cpu_load * (100));
         GrContextForegroundSet(&sContext, ClrWhite);
         GrStringDraw(&sContext, str, -1, 0, 118, false);
+        GrFlush(&sContext); // flush the frame buffer to the LCD
 
     }
     return i;

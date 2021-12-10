@@ -287,9 +287,7 @@ void CopySignal(int32_t triggerIndex)
 int32_t getADCBufferIndex(void)
 {
     int32_t index;
-    IArg key;
 
-    key = GateHwi_enter(gateHwi0);
     if (gDMAPrimary) {  // DMA is currently in the primary channel
         index = ADC_BUFFER_SIZE/2 - 1 -
                 uDMAChannelSizeGet(UDMA_SEC_CHANNEL_ADC10 | UDMA_PRI_SELECT);
@@ -298,7 +296,6 @@ int32_t getADCBufferIndex(void)
         index = ADC_BUFFER_SIZE - 1 -
                 uDMAChannelSizeGet(UDMA_SEC_CHANNEL_ADC10 | UDMA_ALT_SELECT);
     }
-    GateHwi_leave(gateHwi0, key);
 
     return index;
 }

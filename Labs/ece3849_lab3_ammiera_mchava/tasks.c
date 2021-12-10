@@ -143,8 +143,8 @@ void display_task(UArg arg1, UArg arg2)
             WriteTimeScale(2);
             WriteVoltageScale(gVoltageScale);
             ADCSampleScaling(gVoltageScale);
+            // WriteCPULoad(1);
         }
-        GrFlush(&sContext); // flush the frame buffer to the LCD
     }
 }
 

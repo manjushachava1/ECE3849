@@ -28,7 +28,6 @@ const float db_scale = DB_SCALE;
 
 
 //// GLOBAL VARIABLES ////
-static char kiss_fft_cfg_buffer[KISS_FFT_CFG_SIZE];
 size_t buffer_size = KISS_FFT_CFG_SIZE;
 kiss_fft_cfg cfg; // Kiss FFT config
 static kiss_fft_cpx in[NFFT], out[NFFT]; // complex waveform and spectrum buffers
