@@ -139,10 +139,8 @@ void display_task(UArg arg1, UArg arg2)
             DrawTriggerSlope();
             WriteTimeScale(2);
             WriteVoltageScale(gVoltageScale);
-            GrFlush(&sContext); // flush the frame buffer to the LCD
             ADCSampleScaling(gVoltageScale);
         }
-        GrFlush(&sContext); // flush the frame buffer to the LCD
         GrFlush(&sContext); // flush the frame buffer to the LCD
     }
 }

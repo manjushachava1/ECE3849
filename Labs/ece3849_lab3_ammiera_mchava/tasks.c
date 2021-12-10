@@ -101,7 +101,6 @@ void waveform_task(UArg arg1, UArg arg2)
         {
             bufferIndex = getADCBufferIndex();
             triggerIndex = RisingTrigger(bufferIndex); // finds trigger index
-
             CopySignal(triggerIndex); // copies signal starting from and ending 1/2 way behind the trigger index
             gVoltageScale = GetVoltageScale();
             ADCSampleScaling(gVoltageScale);
@@ -124,8 +123,6 @@ void display_task(UArg arg1, UArg arg2)
 
         GrContextForegroundSet(&sContext, ClrBlack);
         GrRectFill(&sContext, &rectFullScreen); // fill screen with black
-
-
 
         if (gSpectrumMode)
         {
