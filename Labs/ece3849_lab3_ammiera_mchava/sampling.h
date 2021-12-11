@@ -38,8 +38,9 @@ extern volatile int32_t gADCBufferIndex; // latest sample index
 //// FUNCTION HEADERS ////
 void SignalInit(void);
 void ADCInit(void);
-int RisingTrigger(void);
+// int RisingTrigger(void);
 void CopySignal(int triggerIndex);
 void DMA_Init(void);
+getADCBufferIndex(void);
 
 #endif /* SAMPLING_H_ */

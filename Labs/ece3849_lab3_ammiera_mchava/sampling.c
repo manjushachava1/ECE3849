@@ -56,6 +56,7 @@ extern uint32_t gSystemClock; // [Hz] system clock frequency
 // DMA
 #pragma DATA_ALIGN(gDMAControlTable, 1024) // address alignment required
 tDMAControlTable gDMAControlTable[64];     // uDMA control table (global)
+volatile bool gDMAPrimary = true; // is DMA occurring in the primary channel?
 
 
 
@@ -146,6 +147,8 @@ void ADCInit(void) {
     TimerConfigure(TIMER1_BASE, TIMER_CFG_PERIODIC);
     TimerControlTrigger(TIMER1_BASE, TIMER_A, true);
 
+
+
 }
 
 // METHOD CALL: main.c
@@ -179,6 +182,11 @@ void DMA_Init(void) {
         (void*)&gADCBuffer[ADC_BUFFER_SIZE/2], ADC_BUFFER_SIZE/2);
 
     uDMAChannelEnable(UDMA_SEC_CHANNEL_ADC10);
+
+    ADCSequenceDMAEnable(ADC1_BASE, 0); // enable DMA for ADC1 sequence 0
+    ADCIntEnableEx(ADC1_BASE, ADC_INT_DMA_SS0); // enable ADC1 sequence 0 DMA interrupt
+    // see https://software-dl.ti.com/simplelink/esd/simplelink_msp432e4_sdk/2.30.00.14/docs/driverlib/msp432e4/html/group__adc__api.html#gae1acb71806ec0cec55290c938fa8cc02
+    // for information on ADCIntEnableEx
 }
 
 // METHOD CALL: RTOS?
@@ -195,14 +203,34 @@ void DMA_Init(void) {
 //      * Testing
 void ISR0_ADC(UArg arg0) {
 
-    ADC1_ISC_R = ADC_ISC_IN0; // clears ADC interrupt flag
-    if (ADC1_OSTAT_R & ADC_OSTAT_OV0)
-    { // check for ADC FIFO overflow
-        gADCErrors++;                   // count errors
-        ADC1_OSTAT_R = ADC_OSTAT_OV0;   // clear overflow condition
+    ADCIntClearEx(ADC1_BASE, ADC_INT_DMA_SS0); // clear the ADC1 sequence 0 DMA interrupt flag
+
+    if (uDMAChannelModeGet(UDMA_SEC_CHANNEL_ADC10 | UDMA_PRI_SELECT) ==
+            UDMA_MODE_STOP) { // checks if primary channel is being used
+
+        // checks the primary DMA channel for end of transfer, and restart if needed
+        uDMAChannelTransferSet(UDMA_SEC_CHANNEL_ADC10 | UDMA_ALT_SELECT,
+                               UDMA_MODE_PINGPONG, (void*)&ADC1_SSFIFO0_R,
+                               (void*)&gADCBuffer[ADC_BUFFER_SIZE/2], ADC_BUFFER_SIZE/2); // restart the primary channel (same as setup)
+        gDMAPrimary = false; // DMA is currently occurring in the alternate buffer
     }
-    gADCBuffer[gADCBufferIndex = ADC_BUFFER_WRAP(gADCBufferIndex + 1)] =
-    ADC1_SSFIFO0_R;         // read sample from the ADC1 sequence 0 FIFO
+
+
+    if (uDMAChannelModeGet(UDMA_SEC_CHANNEL_ADC10 | UDMA_ALT_SELECT) ==
+            UDMA_MODE_STOP) { // checks if alternate channel is being used
+
+        // checks the alternate DMA channel for end of transfer, and restart if needed
+        uDMAChannelTransferSet(UDMA_SEC_CHANNEL_ADC10 | UDMA_PRI_SELECT,
+                               UDMA_MODE_PINGPONG, (void*)&ADC1_SSFIFO0_R,
+                               (void*)&gADCBuffer[ADC_BUFFER_SIZE/2], ADC_BUFFER_SIZE/2); // restart the secondary channel (same as setup)
+
+        gDMAPrimary = true; // DMA is currently occurring in the primary buffer
+    }
+
+    // The DMA channel may be disabled if the CPU is paused by the debugger.
+    if (!uDMAChannelIsEnabled(UDMA_SEC_CHANNEL_ADC10)) {
+        uDMAChannelEnable(UDMA_SEC_CHANNEL_ADC10);  // re-enable the DMA channel
+    }
 }
 
 // METHOD CALL: main.c
@@ -214,27 +242,27 @@ void ISR0_ADC(UArg arg0) {
 // REVISION HISTORY: 11/12/2021
 // NOTES: NA
 // TODO: NA
-int RisingTrigger(void)
-{
-// Step 1
-    int triggerIndex = gADCBufferIndex - HALF_SCREEN_IDX; // half screen width; don't use a magic number;
-
-    // Step 2
-    int triggerSearchStop = triggerIndex - (ADC_BUFFER_SIZE / 2);
-    for (; triggerIndex > triggerSearchStop; triggerIndex--)
-    {
-        // if trigger is found
-        if (gADCBuffer[ADC_BUFFER_WRAP(triggerIndex)] >= ADC_OFFSET && /* checks current sample */
-        gADCBuffer[ADC_BUFFER_WRAP(triggerIndex) + 1] < ADC_OFFSET /* checks next older sample */)
-            break;
-    }
-
-    // Step 3
-    if (triggerIndex == triggerSearchStop) // for loop ran to the end
-        triggerIndex = gADCBufferIndex - HALF_SCREEN_IDX; // reset trigger search index back to how it was initialized
-
-    return triggerIndex;
-}
+//int RisingTrigger(void)
+//{
+//// Step 1
+//    int triggerIndex = gADCBufferIndex - HALF_SCREEN_IDX; // half screen width; don't use a magic number;
+//
+//    // Step 2
+//    int triggerSearchStop = triggerIndex - (ADC_BUFFER_SIZE / 2);
+//    for (; triggerIndex > triggerSearchStop; triggerIndex--)
+//    {
+//        // if trigger is found
+//        if (gADCBuffer[ADC_BUFFER_WRAP(triggerIndex)] >= ADC_OFFSET && /* checks current sample */
+//        gADCBuffer[ADC_BUFFER_WRAP(triggerIndex) + 1] < ADC_OFFSET /* checks next older sample */)
+//            break;
+//    }
+//
+//    // Step 3
+//    if (triggerIndex == triggerSearchStop) // for loop ran to the end
+//        triggerIndex = gADCBufferIndex - HALF_SCREEN_IDX; // reset trigger search index back to how it was initialized
+//
+//    return triggerIndex;
+//}
 
 // METHOD CALL: main.c
 // DESCRIPTION: copies signal starting from and ending 1/2 way behind the trigger index
@@ -256,6 +284,20 @@ void CopySignal(int triggerIndex)
         stableADCBuffer[j] = gADCBuffer[ADC_BUFFER_WRAP(i)]; // gets current sample
         j++;
     }
+}
+
+int32_t getADCBufferIndex(void)
+{
+    int32_t index;
+    if (gDMAPrimary) {  // DMA is currently in the primary channel
+        index = ADC_BUFFER_SIZE/2 - 1 -
+                uDMAChannelSizeGet(UDMA_SEC_CHANNEL_ADC10 | UDMA_PRI_SELECT);
+    }
+    else {              // DMA is currently in the alternate channel
+        index = ADC_BUFFER_SIZE - 1 -
+                uDMAChannelSizeGet(UDMA_SEC_CHANNEL_ADC10 | UDMA_ALT_SELECT);
+    }
+    return index;
 }
 
 
