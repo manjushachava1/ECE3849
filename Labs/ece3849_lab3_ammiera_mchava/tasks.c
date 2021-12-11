@@ -43,6 +43,8 @@ uint32_t gButtonLatency = 0;
 uint32_t gButtonResponseTime = 0;
 uint32_t gButtonMissedDeadlines = 0;
 
+char frequency_str[50];
+
 int bIsSpecSampled = 0; // false
 
 //// FUNCTIONS ////
@@ -144,6 +146,7 @@ void display_task(UArg arg1, UArg arg2)
             GrFlush(&sContext); // flush the frame buffer to the LCD
             ADCSampleScaling(gVoltageScale);
             snprintf(frequency_str, sizeof(frequency_str), "f = %6.3f Hz", avg_frequency); // convert frequency to string
+            GrStringDraw(&sContext, frequency_str, /*length*/ -1, /*x*/ 7, /*y*/ 120, /*opaque*/ false);
         }
         GrFlush(&sContext); // flush the frame buffer to the LCD
         GrFlush(&sContext); // flush the frame buffer to the LCD

@@ -29,6 +29,7 @@
 #include "fifo.h"
 #include "settings.h"
 #include "buttons.h"
+#include "frequency.h"
 #include <math.h>
 
 

@@ -16,6 +16,16 @@
 #include "driverlib/gpio.h"
 #include "driverlib/timer.h"
 #include "driverlib/pin_map.h"
+#include "inc/tm4c1294ncpdt.h"
+
+// XDCtools Header files
+#include <xdc/std.h>
+#include <xdc/runtime/System.h>
+#include <xdc/cfg/global.h>
+
+// BIOS Header files
+#include <ti/sysbios/BIOS.h>
+#include <ti/sysbios/knl/Task.h>
 
 // Time Capture ISR
 uint32_t prevCount = 0;
@@ -23,6 +33,7 @@ uint32_t timerPeriod = 0;
 uint32_t multiPeriodInterval = 0;
 uint32_t accumulatedPeriods = 0;
 float avg_frequency;
+extern uint32_t gSystemClock;
 
 void TimerInit()
 {
