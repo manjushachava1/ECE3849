@@ -20,6 +20,7 @@
 #include "settings.h"
 #include "oscilloscope.h"
 #include "spectrum.h"
+#include "frequency.h"
 
 // XDCtools Header files
 #include <xdc/std.h>
@@ -141,6 +142,7 @@ void display_task(UArg arg1, UArg arg2)
             WriteVoltageScale(gVoltageScale);
             GrFlush(&sContext); // flush the frame buffer to the LCD
             ADCSampleScaling(gVoltageScale);
+            snprintf(frequency_str, sizeof(frequency_str), "f = %6.3f Hz", avg_frequency); // convert frequency to string
         }
         GrFlush(&sContext); // flush the frame buffer to the LCD
         GrFlush(&sContext); // flush the frame buffer to the LCD

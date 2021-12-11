@@ -8,8 +8,9 @@
 #ifndef FREQUENCY_H_
 #define FREQUENCY_H_
 
-void TimerInit(void);
+float avg_frequency;
 
+void TimerInit(void);
 
 
 #endif /* FREQUENCY_H_ */
