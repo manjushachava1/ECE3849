@@ -138,8 +138,10 @@ void display_task(UArg arg1, UArg arg2)
             DrawGrid();
             DrawTriggerSlope();
             WriteTimeScale(2);
+            Semaphore_pend(CSSem, BIOS_WAIT_FOREVER);
             WriteVoltageScale(gVoltageScale);
             ADCSampleScaling(gVoltageScale);
+            Semaphore_post(CSSem);
             // WriteCPULoad(1);
         }
     }

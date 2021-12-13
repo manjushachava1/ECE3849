@@ -67,9 +67,9 @@ int main(void)
     Crystalfontz128x128_SetOrientation(LCD_ORIENTATION_UP); // set screen orientation
 
     // hardware initialization
+    ButtonInit(); // initialize board buttons
     SignalInit(); // initialize signal generator hardware
     ADCInit(); // initialize ADC
-    ButtonInit(); // initialize board buttons
     DMA_Init();
 
     GrContextInit(&sContext, &g_sCrystalfontz128x128); // Initialize the grlib graphics context
