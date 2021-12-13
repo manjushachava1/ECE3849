@@ -43,6 +43,13 @@
 #include <ti/sysbios/knl/Task.h>
 #include <ti/sysbios/knl/Event.h>
 
+// PWM
+#include "driverlib/pwm.h"
+#include "inc/tm4c1294ncpdt.h"
+#include "audio_waveform.h"
+
+#define PWM_PERIOD 258
+
 
 
 
@@ -58,6 +65,10 @@ extern uint32_t gSystemClock; // [Hz] system clock frequency
 #pragma DATA_ALIGN(gDMAControlTable, 1024) // address alignment required
 tDMAControlTable gDMAControlTable[64];     // uDMA control table (global)
 volatile bool gDMAPrimary = true; // is DMA occurring in the primary channel?
+
+// PWM
+uint32_t gPWMSample = 0;            // PWM sample counter
+uint32_t gSamplingRateDivider = 20; // sampling rate divider
 
 
 
@@ -75,35 +86,34 @@ volatile bool gDMAPrimary = true; // is DMA occurring in the primary channel?
 // TODO: NA
 void SignalInit(void)
 {
-    // configure M0PWM2, at GPIO PF2, which is BoosterPack 1 header C1 (2nd from right) pin 2
-    // configure M0PWM3, at GPIO PF3, which is BoosterPack 1 header C1 (2nd from right) pin 3
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
-    GPIOPinTypePWM(GPIO_PORTF_BASE, GPIO_PIN_2 | GPIO_PIN_3); // PF2 = M0PWM2, PF3 = M0PWM3
-    GPIOPinConfigure(GPIO_PF2_M0PWM2);
-    GPIOPinConfigure(GPIO_PF3_M0PWM3);
-    GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_2 | GPIO_PIN_3,
+    // configure M0PWM5, at GPIO PG1
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOG);
+                    // GPIO_PIN_TYPE_STD);
+    GPIOPinTypePWM(GPIO_PORTG_BASE, GPIO_PIN_1); // PG1 = M0PWM5
+    GPIOPinConfigure(GPIO_PG1_M0PWM5);
+    GPIOPadConfigSet(GPIO_PORTG_BASE, GPIO_PIN_1,
     GPIO_STRENGTH_2MA,
                      GPIO_PIN_TYPE_STD);
 
     // configure the PWM0 peripheral, gen 1, outputs 2 and 3
     SysCtlPeripheralEnable(SYSCTL_PERIPH_PWM0);
     PWMClockSet(PWM0_BASE, PWM_SYSCLK_DIV_1); // use system clock without division
-    PWMGenConfigure(PWM0_BASE, PWM_GEN_1,
+    PWMGenConfigure(PWM0_BASE, PWM_GEN_2,
     PWM_GEN_MODE_DOWN | PWM_GEN_MODE_NO_SYNC);
-    PWMGenPeriodSet(PWM0_BASE, PWM_GEN_1,
-                    roundf((float) gSystemClock / PWM_FREQUENCY));
-    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_2,
-                     roundf((float) gSystemClock / PWM_FREQUENCY * 0.4f)); // 40% duty cycle
-    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_3,
-                     roundf((float) gSystemClock / PWM_FREQUENCY * 0.4f));
-    PWMOutputState(PWM0_BASE, PWM_OUT_2_BIT | PWM_OUT_3_BIT, true);
-    PWMGenEnable(PWM0_BASE, PWM_GEN_1);
+    PWMGenPeriodSet(PWM0_BASE, PWM_GEN_2, PWM_PERIOD);
+    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_5,
+                     roundf((float) PWM_PERIOD * 0.5f)); // 50% duty cycle
+
+    PWMOutputState(PWM0_BASE, PWM_OUT_5_BIT, true);
+    PWMGenEnable(PWM0_BASE, PWM_GEN_2);
 
     // initialize timer 3 in one-shot mode for polled timing
     SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER3);
     TimerDisable(TIMER3_BASE, TIMER_BOTH);
     TimerConfigure(TIMER3_BASE, TIMER_CFG_ONE_SHOT);
     TimerLoadSet(TIMER3_BASE, TIMER_A, (gSystemClock) / 100); // 10ms sec interval
+
+    PWMGenIntTrigEnable(PWM0_BASE, PWM_GEN_2, PWM_INT_CNT_ZERO);
 }
 
 // METHOD CALL: main.c
@@ -228,6 +238,18 @@ void ISR0_ADC(UArg arg0) {
     // The DMA channel may be disabled if the CPU is paused by the debugger.
     if (!uDMAChannelIsEnabled(UDMA_SEC_CHANNEL_ADC10)) {
         uDMAChannelEnable(UDMA_SEC_CHANNEL_ADC10);  // re-enable the DMA channel
+    }
+}
+
+void PWM_ISR(void)
+{
+    PWMGenIntClear(PWM0_BASE, PWM_GEN_2, PWM_INT_GEN_2); // clear PWM interrupt flag
+
+    int i = (gPWMSample++) / gSamplingRateDivider; // waveform sample index
+    PWM0_2_CMPB_R = 1 + gWaveform[i]; // write directly to the PWM compare B register
+    if (i ...) { // if at the end of the waveform array
+        PWMIntDisable(PWM0_BASE, PWM_INT_GEN_2); // disable these interrupts
+        gPWMSample = 0; // reset sample index so the waveform starts from the beginning
     }
 }
 
