@@ -17,6 +17,7 @@
 #include <xdc/runtime/System.h>
 #include <xdc/cfg/global.h>
 #include <ti/sysbios/BIOS.h>
+#include <ti/sysbios/knl/Task.h>
 
 #define SYSTEM_CLOCK_MHZ 120            // [MHz] system clock frequency
 #define delay_us(us) SysCtlDelay((us) * SYSTEM_CLOCK_MHZ / 3) // delay in us assuming a 3-cycle loop

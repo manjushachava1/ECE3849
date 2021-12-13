@@ -20,7 +20,6 @@
 #include "settings.h"
 #include "oscilloscope.h"
 #include "spectrum.h"
-#include "frequency.h"
 
 // XDCtools Header files
 #include <xdc/std.h>
@@ -42,8 +41,6 @@ extern tContext sContext;
 uint32_t gButtonLatency = 0;
 uint32_t gButtonResponseTime = 0;
 uint32_t gButtonMissedDeadlines = 0;
-
-char frequency_str[50];
 
 int bIsSpecSampled = 0; // false
 
@@ -84,7 +81,8 @@ void user_input_task(UArg arg1, UArg arg2)
 void waveform_task(UArg arg1, UArg arg2)
 {
     IntMasterEnable();
-    int triggerIndex;
+    int32_t triggerIndex;
+    int32_t bufferIndex;
 
     while (1)
     {
@@ -101,8 +99,8 @@ void waveform_task(UArg arg1, UArg arg2)
         }
         else
         {
-            // triggerIndex = RisingTrigger(); // finds trigger index
-            triggerIndex = getADCBufferIndex();
+            bufferIndex = getADCBufferIndex();
+            triggerIndex = RisingTrigger(bufferIndex); // finds trigger index
             CopySignal(triggerIndex); // copies signal starting from and ending 1/2 way behind the trigger index
             gVoltageScale = GetVoltageScale();
             ADCSampleScaling(gVoltageScale);
@@ -126,8 +124,6 @@ void display_task(UArg arg1, UArg arg2)
         GrContextForegroundSet(&sContext, ClrBlack);
         GrRectFill(&sContext, &rectFullScreen); // fill screen with black
 
-
-
         if (gSpectrumMode)
         {
 //             draw everything to the local frame buffer
@@ -142,14 +138,15 @@ void display_task(UArg arg1, UArg arg2)
             DrawGrid();
             DrawTriggerSlope();
             WriteTimeScale(2);
+            Semaphore_pend(CSSem, BIOS_WAIT_FOREVER);
             WriteVoltageScale(gVoltageScale);
-            GrFlush(&sContext); // flush the frame buffer to the LCD
             ADCSampleScaling(gVoltageScale);
-            snprintf(frequency_str, sizeof(frequency_str), "f = %6.3f Hz", avg_frequency); // convert frequency to string
-            GrStringDraw(&sContext, frequency_str, /*length*/ -1, /*x*/ 7, /*y*/ 120, /*opaque*/ false);
+            Semaphore_post(CSSem);
+
+            WriteCPULoad(1);
+
+            GrFlush(&sContext); // flush the frame buffer to the LCD
         }
-        GrFlush(&sContext); // flush the frame buffer to the LCD
-        GrFlush(&sContext); // flush the frame buffer to the LCD
     }
 }
 

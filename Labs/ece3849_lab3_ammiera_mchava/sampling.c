@@ -41,13 +41,14 @@
 // BIOS Header files
 #include <ti/sysbios/BIOS.h>
 #include <ti/sysbios/knl/Task.h>
+#include <ti/sysbios/knl/Event.h>
 
 
 
 
 //// GLOBAL VARIABLES ////
 volatile uint32_t gADCErrors; // number of missed ADC deadlines
-volatile int32_t gADCBufferIndex = ADC_BUFFER_SIZE - 1; // latest sample index
+// volatile int32_t gADCBufferIndex = ADC_BUFFER_SIZE - 1; // latest sample index
 volatile uint16_t gADCBuffer[ADC_BUFFER_SIZE];
 uint32_t gADCSamplingRate = 0;
 uint16_t stableADCBuffer[ADC_BUFFER_SIZE];
@@ -137,18 +138,15 @@ void ADCInit(void) {
                              ADC_CTL_IE | ADC_CTL_END | ADC_CTL_CH3);
 
     ADCSequenceEnable(ADC1_BASE, 0);
-    ADCIntEnable(ADC1_BASE, 0);
-    IntPrioritySet(INT_ADC1SS0, ADC_INT_PRIORITY << (8 - NUM_PRIORITY_BITS));
-    IntEnable(INT_ADC1SS0);
+//    ADCIntEnable(ADC1_BASE, 0);
+//    IntPrioritySet(INT_ADC1SS0, ADC_INT_PRIORITY << (8 - NUM_PRIORITY_BITS));
+//    IntEnable(INT_ADC1SS0);
 
     // initialize timer to trigger the ADC
     SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER1);
     TimerDisable(TIMER1_BASE, TIMER_BOTH);
     TimerConfigure(TIMER1_BASE, TIMER_CFG_PERIODIC);
     TimerControlTrigger(TIMER1_BASE, TIMER_A, true);
-
-
-
 }
 
 // METHOD CALL: main.c
@@ -242,27 +240,27 @@ void ISR0_ADC(UArg arg0) {
 // REVISION HISTORY: 11/12/2021
 // NOTES: NA
 // TODO: NA
-//int RisingTrigger(void)
-//{
-//// Step 1
-//    int triggerIndex = gADCBufferIndex - HALF_SCREEN_IDX; // half screen width; don't use a magic number;
-//
-//    // Step 2
-//    int triggerSearchStop = triggerIndex - (ADC_BUFFER_SIZE / 2);
-//    for (; triggerIndex > triggerSearchStop; triggerIndex--)
-//    {
-//        // if trigger is found
-//        if (gADCBuffer[ADC_BUFFER_WRAP(triggerIndex)] >= ADC_OFFSET && /* checks current sample */
-//        gADCBuffer[ADC_BUFFER_WRAP(triggerIndex) + 1] < ADC_OFFSET /* checks next older sample */)
-//            break;
-//    }
-//
-//    // Step 3
-//    if (triggerIndex == triggerSearchStop) // for loop ran to the end
-//        triggerIndex = gADCBufferIndex - HALF_SCREEN_IDX; // reset trigger search index back to how it was initialized
-//
-//    return triggerIndex;
-//}
+int RisingTrigger(int32_t bufferIndex)
+{
+// Step 1
+    int triggerIndex = bufferIndex - HALF_SCREEN_IDX; // half screen width; don't use a magic number;
+
+    // Step 2
+    int triggerSearchStop = triggerIndex - (ADC_BUFFER_SIZE / 2);
+    for (; triggerIndex > triggerSearchStop; triggerIndex--)
+    {
+        // if trigger is found
+        if (gADCBuffer[ADC_BUFFER_WRAP(triggerIndex)] >= ADC_OFFSET && /* checks current sample */
+        gADCBuffer[ADC_BUFFER_WRAP(triggerIndex) + 1] < ADC_OFFSET /* checks next older sample */)
+            break;
+    }
+
+    // Step 3
+    if (triggerIndex == triggerSearchStop) // for loop ran to the end
+        triggerIndex = bufferIndex - HALF_SCREEN_IDX; // reset trigger search index back to how it was initialized
+
+    return triggerIndex;
+}
 
 // METHOD CALL: main.c
 // DESCRIPTION: copies signal starting from and ending 1/2 way behind the trigger index
@@ -274,7 +272,7 @@ void ISR0_ADC(UArg arg0) {
 // REVISION HISTORY: 11/12/2021
 // NOTES: NA
 // TODO: NA
-void CopySignal(int triggerIndex)
+void CopySignal(int32_t triggerIndex)
 {
     int i = triggerIndex - (ADC_BUFFER_SIZE / 2); // indexes samples
     int j = 0; // keeps track of local buffer index
@@ -289,6 +287,7 @@ void CopySignal(int triggerIndex)
 int32_t getADCBufferIndex(void)
 {
     int32_t index;
+
     if (gDMAPrimary) {  // DMA is currently in the primary channel
         index = ADC_BUFFER_SIZE/2 - 1 -
                 uDMAChannelSizeGet(UDMA_SEC_CHANNEL_ADC10 | UDMA_PRI_SELECT);
@@ -297,6 +296,7 @@ int32_t getADCBufferIndex(void)
         index = ADC_BUFFER_SIZE - 1 -
                 uDMAChannelSizeGet(UDMA_SEC_CHANNEL_ADC10 | UDMA_ALT_SELECT);
     }
+
     return index;
 }
 
