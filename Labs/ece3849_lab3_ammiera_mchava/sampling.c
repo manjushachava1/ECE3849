@@ -68,7 +68,7 @@ volatile bool gDMAPrimary = true; // is DMA occurring in the primary channel?
 
 // PWM
 uint32_t gPWMSample = 0;            // PWM sample counter
-uint32_t gSamplingRateDivider = 20; // sampling rate divider
+uint32_t gSamplingRateDivider = 29; // (int) floor((gSystemClock/PWM_PERIOD)/(AUDIO_SAMPLING_RATE)); // sampling rate divider
 
 
 
@@ -247,7 +247,7 @@ void PWM_ISR(void)
 
     int i = (gPWMSample++) / gSamplingRateDivider; // waveform sample index
     PWM0_2_CMPB_R = 1 + gWaveform[i]; // write directly to the PWM compare B register
-    if (i ...) { // if at the end of the waveform array
+    if (i >= gWaveformSize) { // if at the end of the waveform array
         PWMIntDisable(PWM0_BASE, PWM_INT_GEN_2); // disable these interrupts
         gPWMSample = 0; // reset sample index so the waveform starts from the beginning
     }
