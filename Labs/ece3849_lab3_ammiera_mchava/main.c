@@ -39,6 +39,8 @@ volatile uint32_t gTime; // time in hundredth of a second
 uint32_t gSystemClock = 120000000; // [Hz] system clock frequency
 tContext sContext;
 
+extern uint32_t count_unloaded;
+
 
 
 
@@ -71,6 +73,8 @@ int main(void)
     SignalInit(); // initialize signal generator hardware
     ADCInit(); // initialize ADC
     DMA_Init();
+
+    count_unloaded = WriteCPULoad(0);
 
     GrContextInit(&sContext, &g_sCrystalfontz128x128); // Initialize the grlib graphics context
     GrContextFontSet(&sContext, &g_sFontFixed6x8); // select font
