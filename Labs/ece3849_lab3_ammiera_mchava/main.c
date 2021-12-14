@@ -1,5 +1,5 @@
 /*
- * ECE 3849 Lab2 starter project
+ * ECE 3849 Lab 3 starter project
  *
  * Gene Bogdanov    9/13/2017
  */
@@ -39,6 +39,8 @@ volatile uint32_t gTime; // time in hundredth of a second
 uint32_t gSystemClock = 120000000; // [Hz] system clock frequency
 tContext sContext;
 
+extern uint32_t count_unloaded;
+
 
 
 
@@ -67,10 +69,13 @@ int main(void)
     Crystalfontz128x128_SetOrientation(LCD_ORIENTATION_UP); // set screen orientation
 
     // hardware initialization
+    ButtonInit(); // initialize board buttons
     SignalInit(); // initialize signal generator hardware
     ADCInit(); // initialize ADC
-    ButtonInit(); // initialize board buttons
     DMA_Init();
+    TimerInit(); // initialize Timer inputs
+
+    count_unloaded = WriteCPULoad(0);
 
     GrContextInit(&sContext, &g_sCrystalfontz128x128); // Initialize the grlib graphics context
     GrContextFontSet(&sContext, &g_sFontFixed6x8); // select font

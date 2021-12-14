@@ -10,12 +10,15 @@
 #include <stdio.h>
 #include <math.h>
 
+#include "Crystalfontz128x128_ST7735.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_ints.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/gpio.h"
 #include "driverlib/timer.h"
 #include "driverlib/pin_map.h"
+#include "driverlib/interrupt.h"
+#include "driverlib/adc.h"
 #include "inc/tm4c1294ncpdt.h"
 
 // XDCtools Header files
@@ -33,6 +36,8 @@ uint32_t timerPeriod = 0;
 uint32_t multiPeriodInterval = 0;
 uint32_t accumulatedPeriods = 0;
 float avg_frequency;
+char frequency_str[50];
+extern tContext sContext;
 extern uint32_t gSystemClock;
 
 void TimerInit()
@@ -54,9 +59,22 @@ void TimerInit()
 
 
 // Timer Capture ISR is an interrupt that calculates the period of the ISR
-void TimerCapture_ISR(UArg arg0){
+void TimerCapture_ISR(UArg arg1){
     // Clear the timer0A Capture interrupt flag
-    TIMER0_ICR_R = TIMER_ICR_CAECINT;
+    TimerIntClear(TIMER0_BASE, TIMER_CAPA_EVENT);
+
+    // Use TimerValueGet() to read full 24 bit captured time count
+    uint32_t currCount = TimerValueGet(TIMER0_BASE, TIMER_A);
+
+    timerPeriod = (currCount - prevCount) & 0xFFFFFF;
+
+    prevCount = currCount;
+}
+
+// Timer Capture ISR is an interrupt that calculates the period of the ISR
+void timercapture_ISR(){
+    // Clear the timer0A Capture interrupt flag
+    TimerIntClear(TIMER0_BASE, TIMER_CAPA_EVENT);
 
     // Use TimerValueGet() to read full 24 bit captured time count
     uint32_t currCount = TimerValueGet(TIMER0_BASE, TIMER_A);
@@ -65,37 +83,10 @@ void TimerCapture_ISR(UArg arg0){
 
     prevCount = currCount;
 
-    multiPeriodInterval += timerPeriod;
-    accumulatedPeriods++;
+
+    snprintf(frequency_str, sizeof(frequency_str), "f = %6.3f Hz", (gSystemClock/timerPeriod)); // convert frequency to string
+
+    GrStringDraw(&sContext, frequency_str, /*length*/-1, /*x*/0, /*y*/
+                 105, /*opaque*/false);
 }
 
-// Clock to post to frequency task
-void freq_clock(UArg arg1){
-    Semaphore_post(FrequencySem); // to buttons
-}
-
-// Determines the average frequency as the ratio of the number of accumulated periods
-// to the accumulated interval, converted from clock cycles to seconds
-void frequency_task(UArg arg1, UArg arg2) {
-    IArg key;
-    uint32_t accu_int, accu_count;
-
-    while (true) {
-        Semaphore_pend(FrequencySem, BIOS_WAIT_FOREVER); // from clock
-
-        // Protect global shared data
-        key = GateHwi_enter(gateHwi0);
-        // Retrieve global data and reset
-        accu_int = multiPeriodInterval;
-        accu_count = accumulatedPeriods;
-        // Reset globals back to 0
-        multiPeriodInterval = 0;
-        accumulatedPeriods = 0;
-        GateHwi_leave(gateHwi0, key);
-
-        // determine average frequency
-        float avg_period = (float)accu_int/accu_count;
-        avg_frequency = 1/(avg_period) * (float)gSystemClock;
-
-    }
-}

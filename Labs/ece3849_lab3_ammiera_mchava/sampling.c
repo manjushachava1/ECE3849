@@ -123,7 +123,7 @@ void ADCInit(void) {
 
     // ADC clock
     uint32_t pll_divisor = (PLL_FREQUENCY - 1) / (16 * ADC_SAMPLING_RATE) + 1; // round divisor up
-    gADCSamplingRate = PLL_FREQUENCY / (16 * pll_divisor); // actual sampling rate may differ from ADC_SAMPLING_RATE
+    gADCSamplingRate = 2000000; //PLL_FREQUENCY / (16 * pll_divisor); // actual sampling rate may differ from ADC_SAMPLING_RATE
     ADCClockConfigSet(ADC0_BASE, ADC_CLOCK_SRC_PLL | ADC_CLOCK_RATE_FULL,
                      pll_divisor); // only ADC0 has PLL clock divisor control
     ADCClockConfigSet(ADC1_BASE, ADC_CLOCK_SRC_PLL | ADC_CLOCK_RATE_FULL,
@@ -207,7 +207,7 @@ void ISR0_ADC(UArg arg0) {
             UDMA_MODE_STOP) { // checks if primary channel is being used
 
         // checks the primary DMA channel for end of transfer, and restart if needed
-        uDMAChannelTransferSet(UDMA_SEC_CHANNEL_ADC10 | UDMA_ALT_SELECT,
+        uDMAChannelTransferSet(UDMA_SEC_CHANNEL_ADC10 | UDMA_PRI_SELECT,
                                UDMA_MODE_PINGPONG, (void*)&ADC1_SSFIFO0_R,
                                (void*)&gADCBuffer[ADC_BUFFER_SIZE/2], ADC_BUFFER_SIZE/2); // restart the primary channel (same as setup)
         gDMAPrimary = false; // DMA is currently occurring in the alternate buffer
@@ -218,7 +218,7 @@ void ISR0_ADC(UArg arg0) {
             UDMA_MODE_STOP) { // checks if alternate channel is being used
 
         // checks the alternate DMA channel for end of transfer, and restart if needed
-        uDMAChannelTransferSet(UDMA_SEC_CHANNEL_ADC10 | UDMA_PRI_SELECT,
+        uDMAChannelTransferSet(UDMA_SEC_CHANNEL_ADC10 | UDMA_ALT_SELECT,
                                UDMA_MODE_PINGPONG, (void*)&ADC1_SSFIFO0_R,
                                (void*)&gADCBuffer[ADC_BUFFER_SIZE/2], ADC_BUFFER_SIZE/2); // restart the secondary channel (same as setup)
 
@@ -287,7 +287,9 @@ void CopySignal(int32_t triggerIndex)
 int32_t getADCBufferIndex(void)
 {
     int32_t index;
+    IArg key;
 
+    key = GateHwi_enter(gateHwi0);
     if (gDMAPrimary) {  // DMA is currently in the primary channel
         index = ADC_BUFFER_SIZE/2 - 1 -
                 uDMAChannelSizeGet(UDMA_SEC_CHANNEL_ADC10 | UDMA_PRI_SELECT);
@@ -296,10 +298,7 @@ int32_t getADCBufferIndex(void)
         index = ADC_BUFFER_SIZE - 1 -
                 uDMAChannelSizeGet(UDMA_SEC_CHANNEL_ADC10 | UDMA_ALT_SELECT);
     }
+    GateHwi_leave(gateHwi0, key);
 
     return index;
 }
-
-
-
-

@@ -20,6 +20,7 @@
 #include "settings.h"
 #include "oscilloscope.h"
 #include "spectrum.h"
+#include "frequency.h"
 
 // XDCtools Header files
 #include <xdc/std.h>
@@ -32,6 +33,7 @@
 
 //// GLOBAL VARIABLES ////
 float gVoltageScale;
+extern uint32_t gSystemClock;
 
 /* imported variables */
 extern uint16_t displayADCBuffer[ADC_BUFFER_SIZE];
@@ -42,7 +44,10 @@ uint32_t gButtonLatency = 0;
 uint32_t gButtonResponseTime = 0;
 uint32_t gButtonMissedDeadlines = 0;
 
+extern uint32_t timerPeriod;
+char frequency_str[50];
 int bIsSpecSampled = 0; // false
+extern uint32_t gSystemClock;
 
 //// FUNCTIONS ////
 
@@ -114,7 +119,7 @@ void waveform_task(UArg arg1, UArg arg2)
 void display_task(UArg arg1, UArg arg2)
 {
     tRectangle rectFullScreen = { 0, 0, GrContextDpyWidthGet(&sContext) - 1,
-    GrContextDpyHeightGet(&sContext) - 1 };
+                                  GrContextDpyHeightGet(&sContext) - 1 };
     GrContextFontSet(&sContext, &g_sFontFixed6x8); // select font
 
     while (true)
@@ -127,10 +132,10 @@ void display_task(UArg arg1, UArg arg2)
         if (gSpectrumMode)
         {
 //             draw everything to the local frame buffer
-           display_spec_grid();
-           display_frequency_scale();
-           display_dB_scale();
-           display_spec_waveform();
+            display_spec_grid();
+            display_frequency_scale();
+            display_dB_scale();
+            display_spec_waveform();
         }
         else
         {
@@ -142,6 +147,14 @@ void display_task(UArg arg1, UArg arg2)
             WriteVoltageScale(gVoltageScale);
             ADCSampleScaling(gVoltageScale);
             Semaphore_post(CSSem);
+
+            uint32_t test = (gSystemClock / timerPeriod);
+            timercapture_ISR();
+//
+//            snprintf(frequency_str, sizeof(frequency_str), "f = %6.3f Hz", test); // convert frequency to string
+//
+//            GrStringDraw(&sContext, frequency_str, /*length*/-1, /*x*/0, /*y*/
+//                         105, /*opaque*/false);
 
             WriteCPULoad(1);
 
@@ -156,7 +169,8 @@ void processing_task(UArg arg1, UArg arg2)
     {
         Semaphore_pend(ProcessingSem, BIOS_WAIT_FOREVER);
 
-        if (gSpectrumMode && !bIsSpecSampled) {
+        if (gSpectrumMode && !bIsSpecSampled)
+        {
             window_time_dom();
             compute_FFT();
             convert_to_dB();

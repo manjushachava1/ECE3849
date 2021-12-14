@@ -9,14 +9,9 @@
 #define TASKS_H_
 
 //// INCLUDES & DEFINES ////
-
-
-
+#include <xdc/std.h>
 
 //// GLOBAL VARIABLES ////
-
-
-
 
 //// FUNCTION HEADERS ////
 void waveform_task(UArg arg1, UArg arg2);

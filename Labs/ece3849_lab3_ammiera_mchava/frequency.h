@@ -8,9 +8,12 @@
 #ifndef FREQUENCY_H_
 #define FREQUENCY_H_
 
-float avg_frequency;
+//// INCLUDES & DEFINES ////
+#include <xdc/std.h>
 
 void TimerInit(void);
+void TimerCapture_ISR(UArg arg1);
+void timercapture_ISR(void);
 
 
 #endif /* FREQUENCY_H_ */
