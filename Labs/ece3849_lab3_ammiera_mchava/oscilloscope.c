@@ -28,6 +28,11 @@
 #include "settings.h"
 #include "spectrum.h"
 
+// PWM
+#include "driverlib/pwm.h"
+#include "inc/tm4c1294ncpdt.h"
+#include "audio_waveform.h"
+
 // time scale display strings
 static const char * const gTimeScaleStr[TIME_SCALE_STEPS] =
         { " 20 us", " 50 us", "100 us", "200 us", "500 us", "  1 ms", "  2 ms",
@@ -175,6 +180,8 @@ void OscilloscopeUserInput(char button)
     case 'A': // BoosterPack button 1
         gSpectrumMode = !gSpectrumMode; // switch between spectrum and oscilloscope mode
         break;
+    case '1': // USR_SW1
+        PWMIntEnable(PWM0_BASE, PWM_INT_GEN_2); // disable these interrupts
     }
 }
 
