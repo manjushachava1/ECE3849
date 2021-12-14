@@ -11,6 +11,9 @@
 
 //// INCLUDES & DEFINES ////
 #include "Crystalfontz128x128_ST7735.h"
+#include <xdc/std.h>
+#include <xdc/runtime/System.h>
+#include <xdc/cfg/global.h>
 
 #define ADC_BUFFER_SIZE 2048 // size must be a power of 2
 #define ADC_BUFFER_WRAP(i) ((i) & (ADC_BUFFER_SIZE - 1)) // index wrapping macro
@@ -38,9 +41,11 @@ extern volatile uint32_t gADCErrors; // number of missed ADC deadlines
 //// FUNCTION HEADERS ////
 void SignalInit(void);
 void ADCInit(void);
-int RisingTrigger(int32_t bufferIndex);
-void CopySignal(int32_t triggerIndex);
 void DMA_Init(void);
 int32_t getADCBufferIndex(void);
+int RisingTrigger(int32_t bufferIndex);
+void CopySignal(int32_t triggerIndex);
+void PWM_HWI1(UArg arg0);
+void ADC_HWI0(UArg arg0);
 
 #endif /* SAMPLING_H_ */
