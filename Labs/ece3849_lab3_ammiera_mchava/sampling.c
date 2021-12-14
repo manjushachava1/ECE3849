@@ -209,7 +209,7 @@ void DMA_Init(void) {
 //      * Need to figure out what is calling this ISR
 //      * Need to figure out what arg0 is for
 //      * Testing
-void ISR0_ADC(UArg arg0) {
+void ADC_HWI0(UArg arg0) {
 
     ADCIntClearEx(ADC1_BASE, ADC_INT_DMA_SS0); // clear the ADC1 sequence 0 DMA interrupt flag
 
@@ -241,7 +241,7 @@ void ISR0_ADC(UArg arg0) {
     }
 }
 
-void PWM_ISR(void)
+void PWM_HWI1(UArg arg0)
 {
     PWMGenIntClear(PWM0_BASE, PWM_GEN_2, PWM_INT_GEN_2); // clear PWM interrupt flag
 
