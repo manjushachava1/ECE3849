@@ -95,7 +95,17 @@ void SignalInit(void)
     GPIO_STRENGTH_2MA,
                      GPIO_PIN_TYPE_STD);
 
-    // configure the PWM0 peripheral, gen 1, outputs 2 and 3
+    // configure M0PWM2, at GPIO PF2, which is BoosterPack 1 header C1 (2nd from right) pin 2
+    // configure M0PWM3, at GPIO PF3, which is BoosterPack 1 header C1 (2nd from right) pin 3
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
+    GPIOPinTypePWM(GPIO_PORTF_BASE, GPIO_PIN_2 | GPIO_PIN_3); // PF2 = M0PWM2, PF3 = M0PWM3
+    GPIOPinConfigure(GPIO_PF2_M0PWM2);
+    GPIOPinConfigure(GPIO_PF3_M0PWM3);
+    GPIOPadConfigSet(GPIO_PORTF_BASE, GPIO_PIN_2 | GPIO_PIN_3,
+    GPIO_STRENGTH_2MA,
+                     GPIO_PIN_TYPE_STD);
+
+    // configure the PWM0 peripheral, gen 2, output 5
     SysCtlPeripheralEnable(SYSCTL_PERIPH_PWM0);
     PWMClockSet(PWM0_BASE, PWM_SYSCLK_DIV_1); // use system clock without division
     PWMGenConfigure(PWM0_BASE, PWM_GEN_2,
@@ -103,9 +113,22 @@ void SignalInit(void)
     PWMGenPeriodSet(PWM0_BASE, PWM_GEN_2, PWM_PERIOD);
     PWMPulseWidthSet(PWM0_BASE, PWM_OUT_5,
                      roundf((float) PWM_PERIOD * 0.5f)); // 50% duty cycle
-
     PWMOutputState(PWM0_BASE, PWM_OUT_5_BIT, true);
     PWMGenEnable(PWM0_BASE, PWM_GEN_2);
+
+    // configure the PWM0 peripheral, gen 1, outputs 2 and 3
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_PWM0);
+    PWMClockSet(PWM0_BASE, PWM_SYSCLK_DIV_1); // use system clock without division
+    PWMGenConfigure(PWM0_BASE, PWM_GEN_1,
+    PWM_GEN_MODE_DOWN | PWM_GEN_MODE_NO_SYNC);
+    PWMGenPeriodSet(PWM0_BASE, PWM_GEN_1,
+                    roundf((float) gSystemClock / PWM_FREQUENCY));
+    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_2,
+                     roundf((float) gSystemClock / PWM_FREQUENCY * 0.4f)); // 40% duty cycle
+    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_3,
+                     roundf((float) gSystemClock / PWM_FREQUENCY * 0.4f));
+    PWMOutputState(PWM0_BASE, PWM_OUT_2_BIT | PWM_OUT_3_BIT, true);
+    PWMGenEnable(PWM0_BASE, PWM_GEN_1);
 
     // initialize timer 3 in one-shot mode for polled timing
     SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER3);

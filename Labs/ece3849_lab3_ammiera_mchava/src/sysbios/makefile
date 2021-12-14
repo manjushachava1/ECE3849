@@ -1,29 +1,29 @@
 
-XOPTS = -I"/home/manjusha/ti/xdctools_3_32_00_06_core/packages/" -Dxdc_target_types__=/home/manjusha/ti/tirtos_tivac_2_16_01_14/products/bios_6_45_02_31/packages/ti/targets/arm/elf/std.h -Dxdc_target_name__=M4F
+XOPTS = -I"C:/ti/xdctools_3_32_00_06_core/packages/" -Dxdc_target_types__=C:/ti/tirtos_tivac_2_16_01_14/products/bios_6_45_02_31/packages/ti/targets/arm/elf/std.h -Dxdc_target_name__=M4F
 
-vpath % /home/manjusha/ti/tirtos_tivac_2_16_01_14/products/bios_6_45_02_31/packages/ti/sysbios/
-vpath %.c /home/manjusha/ti/xdctools_3_32_00_06_core/packages/
+vpath % C:/ti/tirtos_tivac_2_16_01_14/products/bios_6_45_02_31/packages/ti/sysbios/
+vpath %.c C:/ti/xdctools_3_32_00_06_core/packages/
 
 CCOPTS    = --endian=little -mv7M4 --abi=eabi --float_support=fpv4spd16 -q -ms --opt_for_speed=2  --program_level_compile -o3 -g --optimize_with_debug  -Dti_sysbios_knl_Task_minimizeLatency__D=FALSE -Dti_sysbios_knl_Clock_stopCheckNext__D=FALSE -Dti_sysbios_family_arm_m3_Hwi_enableException__D=TRUE -Dti_sysbios_family_arm_m3_Hwi_disablePriority__D=32U -Dti_sysbios_family_arm_m3_Hwi_numSparseInterrupts__D=0U
 
-XDC_ROOT  = /home/manjusha/ti/xdctools_3_32_00_06_core/packages/
+XDC_ROOT  = C:/ti/xdctools_3_32_00_06_core/packages/
 
-BIOS_ROOT = /home/manjusha/ti/tirtos_tivac_2_16_01_14/products/bios_6_45_02_31/packages/ti/sysbios/
+BIOS_ROOT = C:/ti/tirtos_tivac_2_16_01_14/products/bios_6_45_02_31/packages/ti/sysbios/
 
 BIOS_DEFS =  -Dti_sysbios_BIOS_swiEnabled__D=TRUE -Dti_sysbios_BIOS_taskEnabled__D=TRUE -Dti_sysbios_BIOS_clockEnabled__D=TRUE -Dti_sysbios_BIOS_runtimeCreatesEnabled__D=TRUE -Dti_sysbios_hal_Hwi_DISABLE_ALL_HOOKS -Dti_sysbios_knl_Swi_DISABLE_ALL_HOOKS -Dti_sysbios_BIOS_smpEnabled__D=FALSE -Dti_sysbios_Build_useHwiMacros -Dti_sysbios_knl_Swi_numPriorities__D=16 -Dti_sysbios_knl_Task_deleteTerminatedTasks__D=FALSE -Dti_sysbios_knl_Task_numPriorities__D=16 -Dti_sysbios_knl_Task_checkStackFlag__D=TRUE -Dti_sysbios_knl_Task_initStackFlag__D=TRUE -Dti_sysbios_knl_Task_DISABLE_ALL_HOOKS -Dti_sysbios_knl_Clock_TICK_SOURCE=ti_sysbios_knl_Clock_TickSource_TIMER -Dti_sysbios_knl_Clock_TICK_MODE=ti_sysbios_knl_Clock_TickMode_PERIODIC -Dti_sysbios_hal_Core_delegate_getId=ti_sysbios_hal_CoreNull_getId__E -Dti_sysbios_hal_Core_delegate_interruptCore=ti_sysbios_hal_CoreNull_interruptCore__E -Dti_sysbios_hal_Core_delegate_lock=ti_sysbios_hal_CoreNull_lock__E -Dti_sysbios_hal_Core_delegate_unlock=ti_sysbios_hal_CoreNull_unlock__E -Dti_sysbios_hal_Core_numCores__D=1 -Dti_sysbios_hal_CoreNull_numCores__D=1 -Dti_sysbios_utils_Load_taskEnabled__D=FALSE -Dti_sysbios_utils_Load_swiEnabled__D=FALSE -Dti_sysbios_utils_Load_hwiEnabled__D=FALSE -Dti_sysbios_family_arm_m3_Hwi_dispatcherSwiSupport__D=TRUE -Dti_sysbios_family_arm_m3_Hwi_dispatcherTaskSupport__D=TRUE -Dti_sysbios_family_arm_m3_Hwi_dispatcherAutoNestingSupport__D=TRUE -Dti_sysbios_family_arm_m3_Hwi_dispatcherIrpTrackingSupport__D=TRUE -Dti_sysbios_knl_Semaphore_supportsEvents__D=FALSE -Dti_sysbios_knl_Semaphore_supportsPriority__D=FALSE -Dxdc_runtime_Log_DISABLE_ALL
 
-BIOS_INC  = -I"/home/manjusha/ti/tirtos_tivac_2_16_01_14/products/bios_6_45_02_31/packages/"
+BIOS_INC  = -I"C:/ti/tirtos_tivac_2_16_01_14/products/bios_6_45_02_31/packages/"
 
-TARGET_INC = -I"/home/manjusha/ti/tirtos_tivac_2_16_01_14/products/bios_6_45_02_31/packages/"
+TARGET_INC = -I"C:/ti/tirtos_tivac_2_16_01_14/products/bios_6_45_02_31/packages/"
 
-INCS = $(BIOS_INC) $(TARGET_INC)  --include_path="/home/manjusha/git/ECE3849/Labs/ece3849_lab3_ammiera_mchava" --include_path="/home/manjusha/git/ECE3849/Labs/ece3849_lab3_ammiera_mchava" --include_path="/home/manjusha/ti/tirtos_tivac_2_16_01_14/products/TivaWare_C_Series-2.1.1.71b" --include_path="/home/manjusha/ti/tirtos_tivac_2_16_01_14/products/bios_6_45_01_29/packages/ti/sysbios/posix" --include_path="/home/manjusha/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/include" 
+INCS = $(BIOS_INC) $(TARGET_INC)  --include_path="C:/Users/alexm/git/ECE3849/Labs/ece3849_lab3_ammiera_mchava" --include_path="C:/Users/alexm/git/ECE3849/Labs/ece3849_lab3_ammiera_mchava" --include_path="C:/ti/tirtos_tivac_2_16_01_14/products/TivaWare_C_Series-2.1.1.71b" --include_path="C:/ti/tirtos_tivac_2_16_01_14/products/bios_6_45_01_29/packages/ti/sysbios/posix" --include_path="C:/ti/ccs1100/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/include" 
 
-CC = /home/manjusha/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/bin/armcl -c $(CCOPTS) -I /home/manjusha/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/include
-ASM = /home/manjusha/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/bin/armcl -c $(CCOPTS) -I /home/manjusha/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/include
-AR = /home/manjusha/ti/ccs1040/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/bin/armar rq
+CC = C:/ti/ccs1100/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/bin/armcl -c $(CCOPTS) -I C:/ti/ccs1100/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/include
+ASM = C:/ti/ccs1100/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/bin/armcl -c $(CCOPTS) -I C:/ti/ccs1100/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/include
+AR = C:/ti/ccs1100/ccs/tools/compiler/ti-cgt-arm_20.2.5.LTS/bin/armar rq
 
-DEL = rm -f
-CP = cp -f
+DEL = C:/ti/xdctools_3_32_00_06_core/packages/../bin/rm -f
+CP = C:/ti/xdctools_3_32_00_06_core/packages/../bin/cp -f
 
 define RM
 	$(if $(wildcard $1),$(DEL) $1,:)
@@ -88,5 +88,5 @@ sysbios.aem4f: BIOS.obj m3_Hwi_asm.obj m3_Hwi_asm_switch.obj m3_IntrinsicsSuppor
 
 
 clean:
-	@$(DEL) ../makefile.libs
+	@$(DEL) ..\makefile.libs
 	@-$(call RM, *)

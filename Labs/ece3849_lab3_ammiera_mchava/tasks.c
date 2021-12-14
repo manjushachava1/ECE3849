@@ -136,6 +136,8 @@ void display_task(UArg arg1, UArg arg2)
             display_frequency_scale();
             display_dB_scale();
             display_spec_waveform();
+            WriteCPULoad(1);
+            GrFlush(&sContext); // flush the frame buffer to the LCD
         }
         else
         {
@@ -148,16 +150,15 @@ void display_task(UArg arg1, UArg arg2)
             ADCSampleScaling(gVoltageScale);
             Semaphore_post(CSSem);
 
-            uint32_t test = (gSystemClock / timerPeriod);
-            timercapture_ISR();
-//
+//             uint32_t test = (gSystemClock / timerPeriod);
+             timercapture_ISR();
+
 //            snprintf(frequency_str, sizeof(frequency_str), "f = %6.3f Hz", test); // convert frequency to string
 //
 //            GrStringDraw(&sContext, frequency_str, /*length*/-1, /*x*/0, /*y*/
 //                         105, /*opaque*/false);
 
             WriteCPULoad(1);
-
             GrFlush(&sContext); // flush the frame buffer to the LCD
         }
     }

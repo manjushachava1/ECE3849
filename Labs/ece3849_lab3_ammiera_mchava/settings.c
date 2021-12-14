@@ -41,6 +41,7 @@
 
 
 //// GLOBAL VARIABLES ////
+const float temp_voltage_scale = 1;
 
 // variables used to display scaled data
 int16_t y[1024];
@@ -177,7 +178,7 @@ void WriteTimeScale(int timeScale)
     GrContextForegroundSet(&sContext, ClrWhite); // white text
 //    GrStringDrawCentered(&sContext, timeScale + " us", 5, 20, 5, 1);
     GrStringDraw(&sContext, gTimeScaleStr[gTimeSetting], /*length*/-1, /*x*/0, /*y*/
-                     0, /*opaque*/false);
+                     3, /*opaque*/false);
 }
 
 void WriteVoltageScale(float voltageScale)
@@ -195,7 +196,7 @@ void ADCSampleScaling(float voltageScale)
     float fScale;
     int i;
 
-    fScale = (VIN_RANGE * PIXELS_PER_DIV) / ((1 << ADC_BITS) * voltageScale);
+    fScale = (VIN_RANGE * PIXELS_PER_DIV) / ((1 << ADC_BITS) * temp_voltage_scale);
     GrContextForegroundSet(&sContext, ClrYellow); // yellow text
 
     for (i = 0; i < LCD_HORIZONTAL_MAX; i++)
@@ -264,7 +265,6 @@ uint32_t WriteCPULoad(int flag)
         snprintf(str, sizeof(str), "CPU Load = %.2f %%", cpu_load * (100));
         GrContextForegroundSet(&sContext, ClrWhite);
         GrStringDraw(&sContext, str, -1, 0, 118, false);
-        GrFlush(&sContext); // flush the frame buffer to the LCD
 
     }
     return i;
