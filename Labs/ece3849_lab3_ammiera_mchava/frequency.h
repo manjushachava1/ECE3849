@@ -13,7 +13,7 @@
 
 void TimerInit(void);
 void TimerCapture_ISR(UArg arg1);
-void timercapture_ISR(void);
 
+extern uint32_t timerPeriod;
 
 #endif /* FREQUENCY_H_ */

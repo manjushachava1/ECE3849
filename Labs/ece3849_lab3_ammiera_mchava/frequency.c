@@ -32,22 +32,23 @@
 
 // Time Capture ISR
 uint32_t prevCount = 0;
-uint32_t timerPeriod = 0;
 uint32_t multiPeriodInterval = 0;
 uint32_t accumulatedPeriods = 0;
 float avg_frequency;
+char period_str[50];
 char frequency_str[50];
 extern tContext sContext;
 extern uint32_t gSystemClock;
+uint32_t timerPeriod;
 
 void TimerInit()
 {
     // configure GPIO PD0 as timer input T0CCP0 at BoosterPack Connector #1 pin 14
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0);
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
     GPIOPinTypeTimer(GPIO_PORTD_BASE, GPIO_PIN_0);
     GPIOPinConfigure(GPIO_PD0_T0CCP0);
 
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0);
     TimerDisable(TIMER0_BASE, TIMER_BOTH);
     TimerConfigure(TIMER0_BASE, TIMER_CFG_SPLIT_PAIR | TIMER_CFG_A_CAP_TIME_UP);
     TimerControlEvent(TIMER0_BASE, TIMER_A, TIMER_EVENT_POS_EDGE);
@@ -57,22 +58,9 @@ void TimerInit()
     TimerEnable(TIMER0_BASE, TIMER_A);
 }
 
-
 // Timer Capture ISR is an interrupt that calculates the period of the ISR
-void TimerCapture_ISR(UArg arg1){
-    // Clear the timer0A Capture interrupt flag
-    TimerIntClear(TIMER0_BASE, TIMER_CAPA_EVENT);
-
-    // Use TimerValueGet() to read full 24 bit captured time count
-    uint32_t currCount = TimerValueGet(TIMER0_BASE, TIMER_A);
-
-    timerPeriod = (currCount - prevCount) & 0xFFFFFF;
-
-    prevCount = currCount;
-}
-
-// Timer Capture ISR is an interrupt that calculates the period of the ISR
-void timercapture_ISR(){
+void TimerCapture_ISR(UArg arg1)
+{
     // Clear the timer0A Capture interrupt flag
     TimerIntClear(TIMER0_BASE, TIMER_CAPA_EVENT);
 
@@ -83,10 +71,5 @@ void timercapture_ISR(){
 
     prevCount = currCount;
 
-
-    snprintf(frequency_str, sizeof(frequency_str), "f = %6.3f Hz", (gSystemClock/timerPeriod)); // convert frequency to string
-
-    GrStringDraw(&sContext, frequency_str, /*length*/-1, /*x*/0, /*y*/
-                 105, /*opaque*/false);
 }
 

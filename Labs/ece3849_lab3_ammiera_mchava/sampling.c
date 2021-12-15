@@ -68,10 +68,7 @@ volatile bool gDMAPrimary = true; // is DMA occurring in the primary channel?
 
 // PWM
 uint32_t gPWMSample = 0;            // PWM sample counter
-uint32_t gSamplingRateDivider = 29; // (int) floor((gSystemClock/PWM_PERIOD)/(AUDIO_SAMPLING_RATE)); // sampling rate divider
-
-
-
+uint32_t gSamplingRateDivider = 60; // (int) floor((gSystemClock/PWM_PERIOD)/(AUDIO_SAMPLING_RATE)); // sampling rate divider
 
 
 //// FUNCTIONS ////

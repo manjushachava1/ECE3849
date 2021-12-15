@@ -34,7 +34,7 @@
 #include "audio_waveform.h"
 
 // time scale display strings
-static const char * const gTimeScaleStr[TIME_SCALE_STEPS] =
+static const char *const gTimeScaleStr[TIME_SCALE_STEPS] =
         { " 20 us", " 50 us", "100 us", "200 us", "500 us", "  1 ms", "  2 ms",
           "  5 ms", " 10 ms", " 20 ms", " 50 ms", "100 ms" };
 
@@ -78,6 +78,8 @@ extern bool gSpectrumMode = false; // true if FFT mode, false if time domain mod
 extern uint32_t gSystemClock;
 extern int gTimeSetting = 0;                           // time scale index
 extern tContext sContext;  // grlib context
+extern uint32_t timerPeriod;
+char frequency_str[50];
 
 // benchmarking variables
 uint32_t gTriggerSearchTime = 0;
@@ -178,7 +180,11 @@ void OscilloscopeUserInput(char button)
         gTriggerRising = !gTriggerRising; // toggle trigger slope
         break;
     case 'A': // BoosterPack button 1
-        gSpectrumMode = !gSpectrumMode; // switch between spectrum and oscilloscope mode
+        timerPeriod = timerPeriod + 10; // increment timer period
+        gSpectrumMode = !gSpectrumMode;
+        break;
+    case 'B': // BoosterPack button 1
+        timerPeriod--; // decrement timer period
         break;
     case '1': // USR_SW1
         PWMIntEnable(PWM0_BASE, PWM_INT_GEN_2); // disable these interrupts

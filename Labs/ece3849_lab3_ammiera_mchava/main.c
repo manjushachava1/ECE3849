@@ -72,8 +72,8 @@ int main(void)
     ButtonInit(); // initialize board buttons
     SignalInit(); // initialize signal generator hardware
     ADCInit(); // initialize ADC
-    DMA_Init();
     TimerInit(); // initialize Timer inputs
+    DMA_Init();
 
     count_unloaded = WriteCPULoad(0);
 

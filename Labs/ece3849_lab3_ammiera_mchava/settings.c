@@ -38,7 +38,7 @@
 #include "buttons.h"
 #include "sampling.h"
 #include "oscilloscope.h"
-
+#include "frequency.h"
 
 //// GLOBAL VARIABLES ////
 const float temp_voltage_scale = 1;
@@ -46,11 +46,14 @@ const float temp_voltage_scale = 1;
 // variables used to display scaled data
 int16_t y[1024];
 char str[50];
+char frequency_str[50];
 
 // imported variables
 extern int bButtonPressed;
 extern uint16_t stableADCBuffer[ADC_BUFFER_SIZE];
 extern tContext sContext;
+extern uint32_t gSystemClock;
+float gPeriod;
 
 // indexing variables
 uint16_t displayADCBuffer[ADC_BUFFER_SIZE];
@@ -61,19 +64,16 @@ const char S1 = 'a';
 const char S2 = 'b';
 const char NA = 'c';
 
-
 // time scale display strings
-static const char * const gTimeScaleStr[TIME_SCALE_STEPS] =
+static const char *const gTimeScaleStr[TIME_SCALE_STEPS] =
         { " 20 us", " 50 us", "100 us", "200 us", "500 us", "  1 ms", "  2 ms",
           "  5 ms", " 10 ms", " 20 ms", " 50 ms", "100 ms" };
-
 
 // CPU Variables
 uint32_t count_unloaded = 0;
 uint32_t count_loaded = 0;
 float cpu_load = 0.0;
 tContext sContext;
-
 
 //// FUNCTIONS ////
 
@@ -178,7 +178,7 @@ void WriteTimeScale(int timeScale)
     GrContextForegroundSet(&sContext, ClrWhite); // white text
 //    GrStringDrawCentered(&sContext, timeScale + " us", 5, 20, 5, 1);
     GrStringDraw(&sContext, gTimeScaleStr[gTimeSetting], /*length*/-1, /*x*/0, /*y*/
-                     3, /*opaque*/false);
+                 3, /*opaque*/false);
 }
 
 void WriteVoltageScale(float voltageScale)
@@ -196,7 +196,8 @@ void ADCSampleScaling(float voltageScale)
     float fScale;
     int i;
 
-    fScale = (VIN_RANGE * PIXELS_PER_DIV) / ((1 << ADC_BITS) * temp_voltage_scale);
+    fScale = (VIN_RANGE * PIXELS_PER_DIV)
+            / ((1 << ADC_BITS) * temp_voltage_scale);
     GrContextForegroundSet(&sContext, ClrYellow); // yellow text
 
     for (i = 0; i < LCD_HORIZONTAL_MAX; i++)
@@ -212,19 +213,19 @@ void ADCSampleScaling(float voltageScale)
 }
 
 /*
-void DrawFrame(void)
-{
-    int i;
-    for (i = 0; i < LCD_HORIZONTAL_MAX; i++)
-    {
-        if (i != 0)
-        {
-            GrLineDraw(&sContext, i - 1, displayADCBuffer[i - 1], i,
-                       displayADCBuffer[i]);
-        }
-    }
-}
-*/
+ void DrawFrame(void)
+ {
+ int i;
+ for (i = 0; i < LCD_HORIZONTAL_MAX; i++)
+ {
+ if (i != 0)
+ {
+ GrLineDraw(&sContext, i - 1, displayADCBuffer[i - 1], i,
+ displayADCBuffer[i]);
+ }
+ }
+ }
+ */
 
 void DrawTriggerSlope(void)
 {
@@ -264,8 +265,30 @@ uint32_t WriteCPULoad(int flag)
         cpu_load = 1.0f - (float) count_loaded / count_unloaded; // compute CPU load
         snprintf(str, sizeof(str), "CPU Load = %.2f %%", cpu_load * (100));
         GrContextForegroundSet(&sContext, ClrWhite);
-        GrStringDraw(&sContext, str, -1, 0, 118, false);
+        GrStringDraw(&sContext, str, -1, 0, 120, false);
 
     }
     return i;
+}
+
+void WriteFreqAndPeriod(void)
+{
+
+    gPeriod = timerPeriod;
+
+    // print period
+    snprintf(frequency_str, sizeof(frequency_str), "T = %1.0f s",
+             (float) (gPeriod)); // convert frequency to string
+    GrContextForegroundSet(&sContext, ClrWhite);
+    GrStringDraw(&sContext, frequency_str, /*length*/-1, /*x*/0, /*y*/
+                 100, /*opaque*/
+                 false);
+
+    // print frequency
+    snprintf(frequency_str, sizeof(frequency_str), "f = %1.0f Hz",
+             (float) (gSystemClock / gPeriod)); // convert frequency to string
+    GrContextForegroundSet(&sContext, ClrWhite);
+    GrStringDraw(&sContext, frequency_str, /*length*/-1, /*x*/0, /*y*/
+                 110, /*opaque*/
+                 false);
 }

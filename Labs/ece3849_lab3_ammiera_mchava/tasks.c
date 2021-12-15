@@ -34,6 +34,9 @@
 //// GLOBAL VARIABLES ////
 float gVoltageScale;
 extern uint32_t gSystemClock;
+extern uint32_t timerPeriod;
+float gPeriod;
+
 
 /* imported variables */
 extern uint16_t displayADCBuffer[ADC_BUFFER_SIZE];
@@ -43,11 +46,10 @@ extern tContext sContext;
 uint32_t gButtonLatency = 0;
 uint32_t gButtonResponseTime = 0;
 uint32_t gButtonMissedDeadlines = 0;
+float var;
 
-extern uint32_t timerPeriod;
 char frequency_str[50];
 int bIsSpecSampled = 0; // false
-extern uint32_t gSystemClock;
 
 //// FUNCTIONS ////
 
@@ -150,15 +152,9 @@ void display_task(UArg arg1, UArg arg2)
             ADCSampleScaling(gVoltageScale);
             Semaphore_post(CSSem);
 
-//             uint32_t test = (gSystemClock / timerPeriod);
-             timercapture_ISR();
-
-//            snprintf(frequency_str, sizeof(frequency_str), "f = %6.3f Hz", test); // convert frequency to string
-//
-//            GrStringDraw(&sContext, frequency_str, /*length*/-1, /*x*/0, /*y*/
-//                         105, /*opaque*/false);
-
+            WriteFreqAndPeriod();
             WriteCPULoad(1);
+            GrFlush(&sContext); // flush the frame buffer to the LCD
             GrFlush(&sContext); // flush the frame buffer to the LCD
         }
     }

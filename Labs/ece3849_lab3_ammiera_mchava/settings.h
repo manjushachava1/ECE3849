@@ -43,5 +43,6 @@ void ADCSampleScaling(float voltageScale);
 void DrawFrame(void);
 uint32_t WriteCPULoad(int flag);
 void UserInput(char button);
+void WriteFreqAndPeriod(void);
 
 #endif /* SETTINGS_H_ */
